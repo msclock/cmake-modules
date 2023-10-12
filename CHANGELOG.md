@@ -1,3 +1,20 @@
+## [1.0.1](https://github.com/msclock/cmake-modules/compare/v1.0.0...v1.0.1) (2023-10-12)
+
+
+### Style
+
+* improve comments for readability ([501604a](https://github.com/msclock/cmake-modules/commit/501604a094eeac4ae9bd7ddf95ee0057eea326fb))
+
+
+### Chores
+
+* use annotated tags ([67b18ae](https://github.com/msclock/cmake-modules/commit/67b18aea7ec22c5fd921bd2813745b4768bc1f5a))
+
+
+### CI
+
+* add release needs jobs ([8ebebcb](https://github.com/msclock/cmake-modules/commit/8ebebcb0d320ee352413d77e108bb07958600ea9))
+
 ## 1.0.0 (2023-10-11)
 
 
