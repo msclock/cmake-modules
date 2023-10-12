@@ -68,3 +68,4 @@ repos:
         args:
           - -L=lang
           - --check-filenames
+          - --write-changes

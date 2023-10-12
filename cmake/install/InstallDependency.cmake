@@ -9,12 +9,12 @@ A function to enable installation of dependencies as part of the
  `make install` process.
 
 Arguments:
-  TARGETS - a list of installed targets to have dependencies copied for (required)
-  DESTINATION - the runtime directory for those targets (usually `bin`)
-  DIRECTORIES - the directories to search dependencies (required)
-  PRE_EXCLUDE_REGEXES - regular expressions to handle results (optional)
-  POST_EXCLUDE_REGEXES - regular expressions to handle results (optional)
-  POST_INCLUDE_REGEXES - regular expressions to handle results (optional)
+  TARGETS - a list of installed targets to have dependencies copied for. (required)
+  DIRECTORIES - the directories to search dependencies. (required)
+  DESTINATION - the runtime directory for those targets (usually `$<IF:$<PLATFORM_ID:Windows>,bin,lib>`).(optional)
+  PRE_EXCLUDE_REGEXES - regular expressions to handle results. (optional)
+  POST_EXCLUDE_REGEXES - regular expressions to handle results. (optional)
+  POST_INCLUDE_REGEXES - regular expressions to handle results. (optional)
 
 Examples:
   set(app ${CMAKE_PROJECT_NAME}_app)
