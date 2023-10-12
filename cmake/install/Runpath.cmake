@@ -27,3 +27,9 @@ message(STATUS "_rpath:${_rpath}")
 # add auto dly-load path
 list(APPEND CMAKE_INSTALL_RPATH ${_rpath};$ORIGIN)
 message(STATUS "CMAKE_INSTALL_RPATH:${CMAKE_INSTALL_RPATH}")
+
+# dynamic path specify the 3rd party short deps path depends on os-platform
+set(RUNPATH_SHARED_LOCATION $<IF:$<PLATFORM_ID:Windows>,bin,lib>)
+set(RUNPATH_VCPKG_DPENDENCY_PATH
+    ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}$<IF:$<CONFIG:Debug>,/deubg/${RUNPATH_SHARED_LOCATION},/${RUNPATH_SHARED_LOCATION}>
+)
