@@ -1,3 +1,15 @@
+## [1.0.3](https://github.com/msclock/cmake-modules/compare/v1.0.2...v1.0.3) (2023-10-13)
+
+
+### Performance
+
+* remove gtest option INSTALL_GTEST ([235d880](https://github.com/msclock/cmake-modules/commit/235d8800cf69744796bb87ac91aac547d2c7e290))
+
+
+### Chores
+
+* fix typo on CHANGELOG.md ([9b53518](https://github.com/msclock/cmake-modules/commit/9b53518c104f87161c876d575d564ffcb5d3c9ca))
+
 ## [1.0.2](https://github.com/msclock/cmake-modules/compare/v1.0.1...v1.0.2) (2023-10-12)
 
 
