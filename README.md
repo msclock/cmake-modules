@@ -22,40 +22,8 @@ include(module/path/without/.cmake/suffix)
 
 There presents a cmake registry facilitates the cmake modules to refer. An example is [here](https://github.com/msclock/cpp-scaffold).
 
-## Configure
+## Modules
 
-Include some modules for handling configuration in CMake.
+The modules here are divided into different categories: configuration, build, installation and testing. That means relative modules are applied to relative stages of cmake.
 
-- Default
-- Common
-- CheckBuildDir
-- ConfigDebug
-- ConfigDoxygen
-- FindSphinx
-- UniqueOutputBinaryDir
-
-## Build
-
-Include some modules for handling build in CMake.
-
-- Default
-- Ccache
-- LinkOptimization
-- Sanitizer
-- Valgrind
-
-## Install
-
-Include some modules for handling installation in CMake.
-
-- Default
-- Common
-- InstallDependency
-- Runpath
-
-## Test
-
-Include some modules for handling test in CMake.
-
-- Default
-- Coverage
+Basically, modules in the repository are collected from opensouces, but maybe modified to enhance generic usage.
