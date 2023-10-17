@@ -1,3 +1,15 @@
+## [1.0.4](https://github.com/msclock/cmake-modules/compare/v1.0.3...v1.0.4) (2023-10-17)
+
+
+### Performance
+
+* move sanitizer and valgrind to test ([6d04824](https://github.com/msclock/cmake-modules/commit/6d04824fe522598ec7c5d6d50fe29c0140094466))
+
+
+### Docs
+
+* improve readability ([4c7e63d](https://github.com/msclock/cmake-modules/commit/4c7e63dd62d154d762f040bbb73a6b9ae04d0c71))
+
 ## [1.0.3](https://github.com/msclock/cmake-modules/compare/v1.0.2...v1.0.3) (2023-10-13)
 
 
