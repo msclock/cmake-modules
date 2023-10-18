@@ -1,3 +1,10 @@
+## [1.1.0](https://github.com/msclock/cmake-modules/compare/v1.0.4...v1.1.0) (2023-10-18)
+
+
+### Features
+
+* add tools for include directories and install rules ([7cf6ed9](https://github.com/msclock/cmake-modules/commit/7cf6ed99663378878f8ec6a829100b648fadee88))
+
 ## [1.0.4](https://github.com/msclock/cmake-modules/compare/v1.0.3...v1.0.4) (2023-10-17)
 
 
