@@ -35,3 +35,33 @@ macro(add_debug_macro)
     message(STATUS "Ensure _DEBUG is defined for Debug configuration")
   endif()
 endmacro()
+
+#[[
+A function to include directories to target.
+
+Example:
+
+  add_executable(main main.cpp)
+  target_include_interface_directories(main include1 include2)
+
+]]
+function(target_include_interface_directories target)
+  set(_includes)
+  foreach(_include_dir ${ARGN})
+    # Make include_dir absolute
+    cmake_path(IS_RELATIVE _include_dir _is_relative)
+    if(_is_relative)
+      set(_include_dir "${CMAKE_CURRENT_SOURCE_DIR}/${include_dir}")
+    endif()
+    list(APPEND _includes $<BUILD_INTERFACE:${_include_dir}>)
+  endforeach()
+
+  list(APPEND _includes $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  # Include the interface directory
+  get_target_property(_has_source_files ${target} SOURCES)
+  if(NOT _has_source_files)
+    target_include_directories(${target} INTERFACE ${_includes})
+  else()
+    target_include_directories(${target} PUBLIC ${_includes})
+  endif()
+endfunction()
