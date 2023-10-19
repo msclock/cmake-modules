@@ -96,7 +96,7 @@ set(USE_SANITIZER
       STRING
       "Compile with a sanitizer. Options are: Address, Memory, MemoryWithOrigins, Undefined, Thread, Leak, 'Address;Undefined', CFI"
 )
-string(TOLOWER ${USE_SANITIZER} USE_SANITIZER)
+string(TOLOWER "${USE_SANITIZER}" USE_SANITIZER)
 
 function(append value)
   foreach(variable ${ARGN})
