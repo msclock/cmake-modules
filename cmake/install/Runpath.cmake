@@ -16,20 +16,26 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # Prepare RPATH
 file(RELATIVE_PATH _rel ${CMAKE_INSTALL_FULL_BINDIR}
      ${CMAKE_INSTALL_FULL_LIBDIR})
-message(STATUS "_rel:${_rel}")
+message(
+  DEBUG
+  "${CMAKE_INSTALL_FULL_BINDIR} ralative to ${CMAKE_INSTALL_FULL_LIBDIR} path:${_rel}"
+)
 if(APPLE)
   set(_rpath "@loader_path/${_rel}")
 else()
   set(_rpath "$ORIGIN/${_rel}")
 endif()
-message(STATUS "_rpath:${_rpath}")
 
-# add auto dly-load path
+# Append runtime path
 list(APPEND CMAKE_INSTALL_RPATH ${_rpath};$ORIGIN)
 message(STATUS "CMAKE_INSTALL_RPATH:${CMAKE_INSTALL_RPATH}")
 
-# dynamic path specify the 3rd party short deps path depends on os-platform
-set(RUNPATH_SHARED_LOCATION $<IF:$<PLATFORM_ID:Windows>,bin,lib>)
+# Add a variable about platform shared library location
+set(RUNPATH_SHARED_LOCATION
+    $<IF:$<PLATFORM_ID:Windows>,${CMAKE_INSTALL_BINDIR},${CMAKE_INSTALL_LIBDIR}>
+)
+
+# Add a variable about vcpkg dependency path
 set(RUNPATH_VCPKG_DPENDENCY_PATH
     ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}$<IF:$<CONFIG:Debug>,/deubg/${RUNPATH_SHARED_LOCATION},/${RUNPATH_SHARED_LOCATION}>
 )
