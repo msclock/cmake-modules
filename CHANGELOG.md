@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/msclock/cmake-modules/compare/v1.1.1...v1.1.2) (2023-10-19)
+
+
+### Performance
+
+* improve annotations on runpath and install_dependency ([835cbaf](https://github.com/msclock/cmake-modules/commit/835cbafd15a81b0f61af86ed8296fa36992d6a91))
+
 ## [1.1.1](https://github.com/msclock/cmake-modules/compare/v1.1.0...v1.1.1) (2023-10-19)
 
 
