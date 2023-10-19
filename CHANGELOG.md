@@ -1,3 +1,15 @@
+## [1.1.1](https://github.com/msclock/cmake-modules/compare/v1.1.0...v1.1.1) (2023-10-19)
+
+
+### Bug Fixes
+
+* no string output with USE_SANITIZER ([6c9435b](https://github.com/msclock/cmake-modules/commit/6c9435bc76c9df0d05d489b5535e617ead130279))
+
+
+### CI
+
+* only run on master push ([d08c280](https://github.com/msclock/cmake-modules/commit/d08c28002369d84fbc656e1ba33a565e35b2fc46))
+
 ## [1.1.0](https://github.com/msclock/cmake-modules/compare/v1.0.4...v1.1.0) (2023-10-18)
 
 
