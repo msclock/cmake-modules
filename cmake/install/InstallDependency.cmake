@@ -57,8 +57,10 @@ function(install_dependency)
     message(WARNING "DEPENDENIDES DIRECTORIES must be specified")
   endif()
 
+  include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/Runpath.cmake)
+
   if(NOT DEFINED arg_DESTINATION)
-    set(arg_DESTINATION $<IF:$<PLATFORM_ID:Windows>,bin,lib>)
+    set(arg_DESTINATION ${RUNPATH_SHARED_LOCATION})
   endif()
 
   # Install CODE|SCRIPT allow the use of generator expressions
