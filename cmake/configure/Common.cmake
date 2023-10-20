@@ -28,13 +28,15 @@ macro(show_vcpkg_configuration)
   message(STATUS "VCPKG_TARGET_IS_MINGW ${VCPKG_TARGET_IS_MINGW}")
 endmacro()
 
-# Debug configuration
-macro(add_debug_macro)
+#[[
+Add definition _DEBUG with config type Debug
+]]
+function(add_debug_macro)
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
     add_definitions(-D_DEBUG)
-    message(STATUS "Ensure _DEBUG is defined for Debug configuration")
+    message(DEBUG "Ensure _DEBUG is defined for Debug configuration")
   endif()
-endmacro()
+endfunction()
 
 #[[
 A function to include directories to target.
