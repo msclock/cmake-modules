@@ -214,3 +214,46 @@ check_required_components(${_tgts})
   install(CODE "MESSAGE(STATUS \"${USAGE_FILE_CONTENT}\")")
 
 endfunction()
+
+#[[
+A function to provide a target to uninstall things from the command `cmake install`.
+]]
+function(create_uninstall_target)
+  set(uninstall_script_config
+      "if(NOT EXISTS \"@CMAKE_BINARY_DIR@/install_manifest.txt\")
+  message(FATAL_ERROR \"Cannot find install manifest: @CMAKE_BINARY_DIR@/install_manifest.txt\")
+endif()
+
+file(READ \"@CMAKE_BINARY_DIR@/install_manifest.txt\" files)
+string(REGEX REPLACE \"\\n\" \"\;\" files \"\${files}\")
+foreach(file \${files})
+  message(STATUS \"Uninstalling \$ENV{DESTDIR}\${file}\")
+  if(IS_SYMLINK \"\$ENV{DESTDIR}\${file}\" OR EXISTS \"\$ENV{DESTDIR}\${file}\")
+    exec_program(
+      \"@CMAKE_COMMAND@\" ARGS \"-E remove \\\"\$ENV{DESTDIR}\${file}\\\"\"
+      OUTPUT_VARIABLE rm_out
+      RETURN_VALUE rm_retval
+      )
+    if(NOT \"\${rm_retval}\" STREQUAL 0)
+      message(FATAL_ERROR \"Problem when removing \$ENV{DESTDIR}\${file}\")
+    endif()
+  else(IS_SYMLINK \"\$ENV{DESTDIR}\${file}\" OR EXISTS \"\$ENV{DESTDIR}\${file}\")
+    message(STATUS \"File \$ENV{DESTDIR}\${file} does not exist.\")
+  endif()
+endforeach()
+")
+
+  set(_uninstall_file "cmake_uninstall.cmake")
+  file(WRITE "${CMAKE_BINARY_DIR}/${_uninstall_file}.in"
+       ${uninstall_script_config})
+
+  # uninstall target
+  if(NOT TARGET uninstall)
+    configure_file("${CMAKE_BINARY_DIR}/${_uninstall_file}.in"
+                   "${CMAKE_BINARY_DIR}/${_uninstall_file}" IMMEDIATE @ONLY)
+
+    add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P
+                                        ${CMAKE_BINARY_DIR}/${_uninstall_file})
+  endif()
+
+endfunction()
