@@ -1,3 +1,12 @@
+## [1.1.3](https://github.com/msclock/cmake-modules/compare/v1.1.2...v1.1.3) (2023-10-21)
+
+
+### Performance
+
+* add a uninstall target function ([d84fd64](https://github.com/msclock/cmake-modules/commit/d84fd64235b44ced98ef5e1748dff060838cb6c9))
+* add include options for install_target ([85cd50f](https://github.com/msclock/cmake-modules/commit/85cd50f1dc0d334a624f1660193ee03ac75dea4d))
+* common tools ([2adcc3f](https://github.com/msclock/cmake-modules/commit/2adcc3faaf274a7d66f502cc5d38aae0b4fd79b4))
+
 ## [1.1.2](https://github.com/msclock/cmake-modules/compare/v1.1.1...v1.1.2) (2023-10-19)
 
 
