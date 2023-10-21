@@ -23,8 +23,17 @@ Arguments:
   VERSION - The target version. Default to "0.0.0". (optional)
   COMPATIBILITY - Compatibility on version. Default to SameMajorVersion. (optional)
   CONFIGURE_PACKAGE_CONFIG_FILE - The file to generate config file. (optional)
+  INCLUDES - The include directories to install. (optional)
+  INCLUDE_FILES - The include files to install. (optional)
   TARGETS - The targets to pack. (required)
   DEPENDENCIES - The dependencies to check in config file. (required)
+
+Note:
+
+  Includes from sources can be installed by PUBLIC_HEADER using set_target_properties
+  which flattens the hierarchy and puts the header files into the same directory. So
+  the recommended way it to use INCLUDES or INCLUDE_FILES.
+  see https://stackoverflow.com/questions/54271925/how-to-configure-cmakelists-txt-to-install-public-headers-of-a-shared-library
 
 Example:
 
@@ -37,6 +46,8 @@ Example:
     header
     VERSION
     ${PROJECT_VERSION}
+    INCLUDES
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/ # install subdirectories with /
     TARGETS
     header
     DEPENDENCIES
@@ -46,10 +57,11 @@ Example:
 function(install_target)
   set(_opts)
   set(_single_opts NAME VERSION COMPATIBILITY CONFIGURE_PACKAGE_CONFIG_FILE)
-  set(_multi_opts TARGETS DEPENDENCIES)
+  set(_multi_opts TARGETS INCLUDES INCLUDE_FILES DEPENDENCIES)
   cmake_parse_arguments(PARSE_ARGV 0 arg "${_opts}" "${_single_opts}"
                         "${_multi_opts}")
 
+  include(GNUInstallDirs)
   # Specify rules at install time
   install(
     TARGETS ${arg_TARGETS}
@@ -62,6 +74,16 @@ function(install_target)
             COMPONENT ${arg_NAME}_runtime
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${arg_NAME}
                   COMPONENT ${arg_NAME}_development)
+
+  if(arg_INCLUDES)
+    install(DIRECTORY ${arg_INCLUDES}
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${arg_NAME})
+  endif()
+
+  if(arg_INCLUDE_FILES)
+    install(FILES ${arg_INCLUDE_FILES}
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${arg_NAME})
+  endif()
 
   install(
     EXPORT ${arg_NAME}-targets
