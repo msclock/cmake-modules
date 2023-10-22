@@ -1,3 +1,10 @@
+## [1.1.4](https://github.com/msclock/cmake-modules/compare/v1.1.3...v1.1.4) (2023-10-22)
+
+
+### Performance
+
+* improve valgrind usability ([6583e28](https://github.com/msclock/cmake-modules/commit/6583e286580ae7667b41680ab2f5f91fd659087d))
+
 ## [1.1.3](https://github.com/msclock/cmake-modules/compare/v1.1.2...v1.1.3) (2023-10-21)
 
 
