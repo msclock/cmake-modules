@@ -1,3 +1,14 @@
+## [1.1.5](https://github.com/msclock/cmake-modules/compare/v1.1.4...v1.1.5) (2023-10-22)
+
+
+### Performance
+
+* add usage on sanitizer and hide some print info ([d94a30e](https://github.com/msclock/cmake-modules/commit/d94a30e51a584e6e1e1abb237ebaddcecc1cbaee))
+* change ccache verify flow ([772f0fa](https://github.com/msclock/cmake-modules/commit/772f0fa899a43d252bd49c1dacb7d6eee8138e26))
+* change valgrind flow and usage ([b444017](https://github.com/msclock/cmake-modules/commit/b44401719c934d0d44f0c30dc58697ff1ca4eb95))
+* install include among modules ([4e53c96](https://github.com/msclock/cmake-modules/commit/4e53c96509c6853cb6e39bd1b8de90024a52643d))
+* use PARSE_ARGV with cmake_parse_arguments ([e67a95c](https://github.com/msclock/cmake-modules/commit/e67a95c3ef0668272d46f2440b19ad7f68b86251))
+
 ## [1.1.4](https://github.com/msclock/cmake-modules/compare/v1.1.3...v1.1.4) (2023-10-22)
 
 
