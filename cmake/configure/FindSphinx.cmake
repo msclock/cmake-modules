@@ -311,23 +311,23 @@ function(sphinx_add_docs _target)
   set(_single_opts BUILDER OUTPUT_DIRECTORY SOURCE_DIRECTORY CONF_FILE
                    BREATH_DEBUG)
   set(_multi_opts BREATHE_PROJECTS)
-  cmake_parse_arguments(_args "${_opts}" "${_single_opts}" "${_multi_opts}"
-                        ${ARGN})
+  cmake_parse_arguments(PARSE_ARGV 0 "arg" "${_opts}" "${_single_opts}"
+                        "${_multi_opts}")
 
   unset(SPHINX_BREATHE_PROJECTS)
 
   # Check if required arguments are provided
-  if(NOT _args_BUILDER)
+  if(NOT arg_BUILDER)
     message(FATAL_ERROR "Sphinx builder not specified for target ${_target}")
-  elseif(NOT _args_SOURCE_DIRECTORY)
+  elseif(NOT arg_SOURCE_DIRECTORY)
     message(
       FATAL_ERROR "Sphinx source directory not specified for target ${_target}")
   else()
     # Check if source directory is absolute or relative
-    if(NOT IS_ABSOLUTE "${_args_SOURCE_DIRECTORY}")
-      get_filename_component(_sourcedir "${_args_SOURCE_DIRECTORY}" ABSOLUTE)
+    if(NOT IS_ABSOLUTE "${arg_SOURCE_DIRECTORY}")
+      get_filename_component(_sourcedir "${arg_SOURCE_DIRECTORY}" ABSOLUTE)
     else()
-      set(_sourcedir "${_args_SOURCE_DIRECTORY}")
+      set(_sourcedir "${arg_SOURCE_DIRECTORY}")
     endif()
     # Check if source directory exists
     if(NOT IS_DIRECTORY "${_sourcedir}")
@@ -337,15 +337,15 @@ function(sphinx_add_docs _target)
   endif()
 
   # Set builder and output directory
-  set(_builder "${_args_BUILDER}")
-  if(_args_OUTPUT_DIRECTORY)
-    set(_outputdir "${_args_OUTPUT_DIRECTORY}")
+  set(_builder "${arg_BUILDER}")
+  if(arg_OUTPUT_DIRECTORY)
+    set(_outputdir "${arg_OUTPUT_DIRECTORY}")
   else()
     set(_outputdir "${CMAKE_CURRENT_BINARY_DIR}/${_target}")
   endif()
 
   # Check if breathe projects are specified
-  if(_args_BREATHE_PROJECTS)
+  if(arg_BREATHE_PROJECTS)
     if(NOT Sphinx_breathe_FOUND)
       message(FATAL_ERROR "Sphinx extension 'breathe' is not available. Needed"
                           "by sphinx_add_docs for target ${_target}")
@@ -354,7 +354,7 @@ function(sphinx_add_docs _target)
     list(APPEND SPHINX_EXTENSIONS breathe)
 
     # Iterate through each breathe project
-    foreach(_doxygen_target ${_args_BREATHE_PROJECTS})
+    foreach(_doxygen_target ${arg_BREATHE_PROJECTS})
       if(TARGET ${_doxygen_target})
         list(APPEND _depends ${_doxygen_target})
 
@@ -412,9 +412,9 @@ function(sphinx_add_docs _target)
     endforeach()
   endif()
 
-  # Set BREATH_DEBUG based on the value of _args_BREATH_DEBUG
-  if(_args_BREATH_DEBUG)
-    set(BREATH_DEBUG ${_args_BREATH_DEBUG})
+  # Set BREATH_DEBUG based on the value of arg_BREATH_DEBUG
+  if(arg_BREATH_DEBUG)
+    set(BREATH_DEBUG ${arg_BREATH_DEBUG})
   else()
     set(BREATH_DEBUG False)
   endif()
@@ -423,15 +423,15 @@ function(sphinx_add_docs _target)
   set(_cachedir "${CMAKE_CURRENT_BINARY_DIR}/${_target}.cache")
   file(MAKE_DIRECTORY "${_cachedir}")
 
-  # Check if _args_CONF_FILE exists and configure the project accordingly
-  if(_args_CONF_FILE AND EXISTS ${_args_CONF_FILE})
+  # Check if arg_CONF_FILE exists and configure the project accordingly
+  if(arg_CONF_FILE AND EXISTS ${arg_CONF_FILE})
     # Set BREATHE_DEFAULT_PROJECT and BREATHE_PROJECTS
     set(BREATHE_DEFAULT_PROJECT ${_breathe_default_project})
     set(BREATHE_PROJECTS ${_breathe_projects})
 
-    # Copy the _args_CONF_FILE to the cache directory and copy all docs files to
+    # Copy the arg_CONF_FILE to the cache directory and copy all docs files to
     # the cache directory
-    file(COPY ${_args_CONF_FILE} DESTINATION ${_cachedir})
+    file(COPY ${arg_CONF_FILE} DESTINATION ${_cachedir})
     file(GLOB all_docs_files ${_sourcedir}/*)
     file(COPY ${all_docs_files} DESTINATION ${_cachedir})
   else()

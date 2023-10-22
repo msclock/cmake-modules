@@ -248,18 +248,18 @@ function(target_code_coverage TARGET_NAME)
   set(_opts AUTO ALL EXTERNAL PUBLIC INTERFACE PLAIN)
   set(_single_opts COVERAGE_TARGET_NAME)
   set(_multi_opts EXCLUDE OBJECTS ARGS)
-  cmake_parse_arguments(target_code_coverage "${_opts}" "${_single_opts}"
-                        "${_multi_opts}" ${ARGN})
+  cmake_parse_arguments(PARSE_ARGV 0 "arg" "${_opts}" "${_single_opts}"
+                        "${_multi_opts}")
 
   # Set the visibility of target functions to PUBLIC, INTERFACE or default to
   # PRIVATE.
-  if(target_code_coverage_PUBLIC)
+  if(arg_PUBLIC)
     set(TARGET_VISIBILITY PUBLIC)
     set(TARGET_LINK_VISIBILITY PUBLIC)
-  elseif(target_code_coverage_INTERFACE)
+  elseif(arg_INTERFACE)
     set(TARGET_VISIBILITY INTERFACE)
     set(TARGET_LINK_VISIBILITY INTERFACE)
-  elseif(target_code_coverage_PLAIN)
+  elseif(arg_PLAIN)
     set(TARGET_VISIBILITY PUBLIC)
     set(TARGET_LINK_VISIBILITY)
   else()
@@ -267,9 +267,9 @@ function(target_code_coverage TARGET_NAME)
     set(TARGET_LINK_VISIBILITY PRIVATE)
   endif()
 
-  if(NOT target_code_coverage_COVERAGE_TARGET_NAME)
+  if(NOT arg_COVERAGE_TARGET_NAME)
     # If a specific name was given, use that instead.
-    set(target_code_coverage_COVERAGE_TARGET_NAME ${TARGET_NAME})
+    set(arg_COVERAGE_TARGET_NAME ${TARGET_NAME})
   endif()
 
   if(CODE_COVERAGE)
@@ -294,11 +294,11 @@ function(target_code_coverage TARGET_NAME)
     get_target_property(target_type ${TARGET_NAME} TYPE)
 
     # Add shared library to processing for 'all' targets
-    if(target_type STREQUAL "SHARED_LIBRARY" AND target_code_coverage_ALL)
+    if(target_type STREQUAL "SHARED_LIBRARY" AND arg_ALL)
       if(CMAKE_C_COMPILER_ID MATCHES [[(Apple)?Clang]]
          OR CMAKE_CXX_COMPILER_ID MATCHES [[(Apple)?Clang]])
         add_custom_target(
-          ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
+          ccov-run-${arg_COVERAGE_TARGET_NAME}
           COMMAND
             ${CMAKE_COMMAND} -E echo "-object=$<TARGET_FILE:${TARGET_NAME}>" >>
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
@@ -311,8 +311,7 @@ function(target_code_coverage TARGET_NAME)
           )
         endif()
 
-        add_dependencies(ccov-libs
-                         ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
+        add_dependencies(ccov-libs ccov-run-${arg_COVERAGE_TARGET_NAME})
       endif()
     endif()
 
@@ -323,7 +322,7 @@ function(target_code_coverage TARGET_NAME)
 
         # If there are shared objects to also work with, generate the string to
         # add them here
-        foreach(SO_TARGET ${target_code_coverage_OBJECTS})
+        foreach(SO_TARGET ${arg_OBJECTS})
           # Check to see if the target is a shared object
           if(TARGET ${SO_TARGET})
             get_target_property(SO_TARGET_TYPE ${SO_TARGET} TYPE)
@@ -337,33 +336,33 @@ function(target_code_coverage TARGET_NAME)
         # available for further processing. Separated to allow Windows to run
         # this target serially.
         add_custom_target(
-          ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
+          ccov-run-${arg_COVERAGE_TARGET_NAME}
           COMMAND
             ${CMAKE_COMMAND} -E env
-            LLVM_PROFILE_FILE=${target_code_coverage_COVERAGE_TARGET_NAME}.profraw
-            $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
+            LLVM_PROFILE_FILE=${arg_COVERAGE_TARGET_NAME}.profraw
+            $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
           COMMAND
             ${CMAKE_COMMAND} -E echo "-object=$<TARGET_FILE:${TARGET_NAME}>"
             ${SO_OBJECTS} >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list
           COMMAND
             ${CMAKE_COMMAND} -E echo
-            "${CMAKE_CURRENT_BINARY_DIR}/${target_code_coverage_COVERAGE_TARGET_NAME}.profraw"
-            >> ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
+            "${CMAKE_CURRENT_BINARY_DIR}/${arg_COVERAGE_TARGET_NAME}.profraw" >>
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/profraw.list
           JOB_POOL ccov_serial_pool
           DEPENDS ccov-libs ${TARGET_NAME})
 
         # Merge the generated profile data so llvm-cov can process it
         add_custom_target(
-          ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME}
+          ccov-processing-${arg_COVERAGE_TARGET_NAME}
           COMMAND
             ${LLVM_PROFDATA_PATH} merge -sparse
-            ${target_code_coverage_COVERAGE_TARGET_NAME}.profraw -o
-            ${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
-          DEPENDS ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
+            ${arg_COVERAGE_TARGET_NAME}.profraw -o
+            ${arg_COVERAGE_TARGET_NAME}.profdata
+          DEPENDS ccov-run-${arg_COVERAGE_TARGET_NAME})
 
         # Ignore regex only works on LLVM >= 7
         if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
-          foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
+          foreach(EXCLUDE_ITEM ${arg_EXCLUDE})
             set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
                               -ignore-filename-regex='${EXCLUDE_ITEM}')
           endforeach()
@@ -371,58 +370,57 @@ function(target_code_coverage TARGET_NAME)
 
         # Print out details of the coverage information to the command line
         add_custom_target(
-          ccov-show-${target_code_coverage_COVERAGE_TARGET_NAME}
+          ccov-show-${arg_COVERAGE_TARGET_NAME}
           COMMAND
             ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
-            -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
+            -instr-profile=${arg_COVERAGE_TARGET_NAME}.profdata
             -show-line-counts-or-regions ${EXCLUDE_REGEX}
-          DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
+          DEPENDS ccov-processing-${arg_COVERAGE_TARGET_NAME})
 
         # Print out a summary of the coverage information to the command line
         add_custom_target(
-          ccov-report-${target_code_coverage_COVERAGE_TARGET_NAME}
+          ccov-report-${arg_COVERAGE_TARGET_NAME}
           COMMAND
             ${LLVM_COV_PATH} report $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
-            -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
-            ${EXCLUDE_REGEX}
-          DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
+            -instr-profile=${arg_COVERAGE_TARGET_NAME}.profdata ${EXCLUDE_REGEX}
+          DEPENDS ccov-processing-${arg_COVERAGE_TARGET_NAME})
 
         # Export coverage information so continuous integration tools (e.g.
         # Jenkins) can consume it
         add_custom_target(
-          ccov-export-${target_code_coverage_COVERAGE_TARGET_NAME}
+          ccov-export-${arg_COVERAGE_TARGET_NAME}
           COMMAND
             ${LLVM_COV_PATH} export $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
-            -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
-            -format="text" ${EXCLUDE_REGEX} >
-            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}.json
-          DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
+            -instr-profile=${arg_COVERAGE_TARGET_NAME}.profdata -format="text"
+            ${EXCLUDE_REGEX} >
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${arg_COVERAGE_TARGET_NAME}.json
+          DEPENDS ccov-processing-${arg_COVERAGE_TARGET_NAME})
 
         # Generates HTML output of the coverage information for perusal
         add_custom_target(
-          ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
+          ccov-${arg_COVERAGE_TARGET_NAME}
           COMMAND
             ${LLVM_COV_PATH} show $<TARGET_FILE:${TARGET_NAME}> ${SO_OBJECTS}
-            -instr-profile=${target_code_coverage_COVERAGE_TARGET_NAME}.profdata
+            -instr-profile=${arg_COVERAGE_TARGET_NAME}.profdata
             -show-line-counts-or-regions
-            -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}
+            -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${arg_COVERAGE_TARGET_NAME}
             -format="html" ${EXCLUDE_REGEX}
-          DEPENDS ccov-processing-${target_code_coverage_COVERAGE_TARGET_NAME})
+          DEPENDS ccov-processing-${arg_COVERAGE_TARGET_NAME})
 
       elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                                   "GNU")
         set(COVERAGE_INFO
-            "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}.info"
+            "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${arg_COVERAGE_TARGET_NAME}.info"
         )
 
         # Run the executable, generating coverage information
         add_custom_target(
-          ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME}
-          COMMAND $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
+          ccov-run-${arg_COVERAGE_TARGET_NAME}
+          COMMAND $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
           DEPENDS ${TARGET_NAME})
 
         # Generate exclusion string for use
-        foreach(EXCLUDE_ITEM ${target_code_coverage_EXCLUDE})
+        foreach(EXCLUDE_ITEM ${arg_EXCLUDE})
           set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO}
                             '${EXCLUDE_ITEM}')
         endforeach()
@@ -434,17 +432,17 @@ function(target_code_coverage TARGET_NAME)
           set(EXCLUDE_COMMAND ;)
         endif()
 
-        if(NOT ${target_code_coverage_EXTERNAL})
+        if(NOT ${arg_EXTERNAL})
           set(EXTERNAL_OPTION --no-external)
         endif()
 
         # Capture coverage data
         if(${CMAKE_VERSION} VERSION_LESS "3.17.0")
           add_custom_target(
-            ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME}
+            ccov-capture-${arg_COVERAGE_TARGET_NAME}
             COMMAND ${CMAKE_COMMAND} -E remove -f ${COVERAGE_INFO}
             COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-            COMMAND $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
+            COMMAND $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
             COMMAND
               ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
               ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
@@ -453,10 +451,10 @@ function(target_code_coverage TARGET_NAME)
             DEPENDS ${TARGET_NAME})
         else()
           add_custom_target(
-            ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME}
+            ccov-capture-${arg_COVERAGE_TARGET_NAME}
             COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
             COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-            COMMAND $<TARGET_FILE:${TARGET_NAME}> ${target_code_coverage_ARGS}
+            COMMAND $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
             COMMAND
               ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
               ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
@@ -467,43 +465,41 @@ function(target_code_coverage TARGET_NAME)
 
         # Generates HTML output of the coverage information for perusal
         add_custom_target(
-          ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
+          ccov-${arg_COVERAGE_TARGET_NAME}
           COMMAND
             ${GENHTML_PATH} -o
-            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${arg_COVERAGE_TARGET_NAME}
             ${COVERAGE_INFO}
-          DEPENDS ccov-capture-${target_code_coverage_COVERAGE_TARGET_NAME})
+          DEPENDS ccov-capture-${arg_COVERAGE_TARGET_NAME})
       endif()
       if(NOT MSVC)
         add_custom_command(
-          TARGET ccov-${target_code_coverage_COVERAGE_TARGET_NAME}
+          TARGET ccov-${arg_COVERAGE_TARGET_NAME}
           POST_BUILD
           COMMAND ;
           COMMENT
-            "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${target_code_coverage_COVERAGE_TARGET_NAME}/index.html in your browser to view the coverage report."
+            "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${arg_COVERAGE_TARGET_NAME}/index.html in your browser to view the coverage report."
         )
 
         # AUTO
-        if(target_code_coverage_AUTO)
+        if(arg_AUTO)
           if(NOT TARGET ccov)
             add_custom_target(ccov)
           endif()
-          add_dependencies(ccov
-                           ccov-${target_code_coverage_COVERAGE_TARGET_NAME})
+          add_dependencies(ccov ccov-${arg_COVERAGE_TARGET_NAME})
 
           if(NOT CMAKE_C_COMPILER_ID MATCHES "GNU"
              AND NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU")
             if(NOT TARGET ccov-report)
               add_custom_target(ccov-report)
             endif()
-            add_dependencies(
-              ccov-report
-              ccov-report-${target_code_coverage_COVERAGE_TARGET_NAME})
+            add_dependencies(ccov-report
+                             ccov-report-${arg_COVERAGE_TARGET_NAME})
           endif()
         endif()
 
         # ALL
-        if(target_code_coverage_ALL)
+        if(arg_ALL)
           if(NOT TARGET ccov-all-processing)
             message(
               FATAL_ERROR
@@ -511,9 +507,8 @@ function(target_code_coverage TARGET_NAME)
             )
           endif()
 
-          add_dependencies(
-            ccov-all-processing
-            ccov-run-${target_code_coverage_COVERAGE_TARGET_NAME})
+          add_dependencies(ccov-all-processing
+                           ccov-run-${arg_COVERAGE_TARGET_NAME})
         endif()
 
       endif(NOT MSVC)
@@ -554,8 +549,8 @@ function(add_code_coverage_all_targets)
   # Argument parsing
   set(_single_opts HTML_OUTPUT_DIRECTORY)
   set(_multi_opts EXCLUDE)
-  cmake_parse_arguments(add_code_coverage_all_targets "" "${_single_opts}"
-                        "${_multi_opts}" ${ARGN})
+  cmake_parse_arguments(PARSE_ARGV 0 "arg" "" "${_single_opts}"
+                        "${_multi_opts}")
 
   if(CODE_COVERAGE)
     if(CMAKE_C_COMPILER_ID MATCHES [[(Apple)?Clang]]
@@ -581,7 +576,7 @@ function(add_code_coverage_all_targets)
 
       # Regex exclude only available for LLVM >= 7
       if(LLVM_COV_VERSION VERSION_GREATER_EQUAL "7.0.0")
-        foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
+        foreach(EXCLUDE_ITEM ${arg_EXCLUDE})
           set(EXCLUDE_REGEX ${EXCLUDE_REGEX}
                             -ignore-filename-regex='${EXCLUDE_ITEM}')
         endforeach()
@@ -656,7 +651,7 @@ function(add_code_coverage_all_targets)
 
       # Exclusion regex string creation
       set(EXCLUDE_REGEX)
-      foreach(EXCLUDE_ITEM ${add_code_coverage_all_targets_EXCLUDE})
+      foreach(EXCLUDE_ITEM ${arg_EXCLUDE})
         set(EXCLUDE_REGEX ${EXCLUDE_REGEX} --remove ${COVERAGE_INFO}
                           '${EXCLUDE_ITEM}')
       endforeach()
@@ -705,16 +700,16 @@ function(add_code_coverage_all_targets)
           "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
       )
 
-      if(add_code_coverage_all_targets_HTML_OUTPUT_DIRECTORY)
+      if(arg_HTML_OUTPUT_DIRECTORY)
         add_custom_command(
           TARGET ccov-all
           POST_BUILD
           COMMAND
             ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
-            ${add_code_coverage_all_targets_HTML_OUTPUT_DIRECTORY}
+            ${arg_HTML_OUTPUT_DIRECTORY}
           COMMENT
-            "Copy coverage html to output directory ${add_code_coverage_all_targets_HTML_OUTPUT_DIRECTORY} from ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged"
+            "Copy coverage html to output directory ${arg_HTML_OUTPUT_DIRECTORY} from ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged"
         )
       endif()
     endif(NOT MSVC)

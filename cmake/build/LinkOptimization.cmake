@@ -35,9 +35,8 @@ macro(link_time_optimization)
   set(options REQUIRED)
   set(single_value_keywords)
   set(multi_value_keywords)
-  cmake_parse_arguments(
-    link_time_optimization "${options}" "${single_value_keywords}"
-    "${multi_value_keywords}" ${ARGN})
+  cmake_parse_arguments(PARSE_ARGV 0 "arg" "${options}"
+                        "${single_value_keywords}" "${multi_value_keywords}")
 
   check_ipo_supported(RESULT result OUTPUT output)
   if(result)
@@ -45,7 +44,7 @@ macro(link_time_optimization)
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
     message(STATUS "Enable lto optimization")
   else()
-    if(link_time_optimization_REQUIRED)
+    if(arg_REQUIRED)
       message(
         FATAL_ERROR
           "Link Time Optimization not supported, but listed as REQUIRED: ${output}"
@@ -70,9 +69,8 @@ function(target_link_time_optimization TARGET_NAME)
   set(options REQUIRED)
   set(single_value_keywords)
   set(multi_value_keywords)
-  cmake_parse_arguments(
-    target_link_time_optimization "${options}" "${single_value_keywords}"
-    "${multi_value_keywords}" ${ARGN})
+  cmake_parse_arguments(PARSE_ARGV 0 "arg" "${options}"
+                        "${single_value_keywords}" "${multi_value_keywords}")
 
   check_ipo_supported(RESULT result OUTPUT output)
   if(result)
@@ -80,7 +78,7 @@ function(target_link_time_optimization TARGET_NAME)
     set_property(TARGET ${TARGET_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION
                                                 TRUE)
   else()
-    if(target_link_time_optimization_REQUIRED)
+    if(arg_REQUIRED)
       message(
         FATAL_ERROR
           "Link Time Optimization not supported, but listed as REQUIRED for the ${TARGET_NAME} target: ${output}"
