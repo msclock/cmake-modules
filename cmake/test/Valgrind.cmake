@@ -4,36 +4,38 @@ Configure valgrind to check memcheck on testsuit
 Note:
   This requires enable the testing.
 
-Example:
-
-    # configure valgrind
-    if(CMAKE_HOST_UNIX)
-      include(ConfigValgrind)
-      config_valgrind()
-    endif()
-
 ]]
-macro(config_valgrind)
-  # find valgrind executable
-  find_program(VALGRIND_COMMAND NAMES valgrind)
-  if(VALGRIND_COMMAND)
-    message(STATUS "Found valgrind directory:${VALGRIND_COMMAND}")
-    set(VALGRIND_COMMAND Valgrind)
-    # --gen-suppressions=all  gen suppress info automatically
-    # --track-origins=yes locates the original position
-    # --suppressions="${CMAKE_SOURCE_DIR}/valgrind_suppress.txt"
-    set(VALGRIND_COMMAND_OPTIONS
-        "--leak-check=full --track-origins=yes --show-leak-kinds=all")
-  else()
-    message(WARNING "Not found valgrind directory")
-  endif()
-endmacro()
+include_guard(GLOBAL)
 
-# configure valgrind
-option(ENABLE_VALGRIND "enable valgrind to check memory issues")
-if(${ENABLE_VALGRIND} AND CMAKE_HOST_UNIX)
-  config_valgrind()
+find_program(
+  VALGRIND_COMMAND
+  NAMES valgrind
+  DOC "valgrind executable")
+
+set(USE_VALGRIND
+    "--leak-check=full --gen-suppressions=all --track-origins=yes"
+    CACHE STRING "use valgrind to check memory issues.")
+
+if(VALGRIND_COMMAND)
+  message(
+    STATUS
+      "Activate valgrind: ${VALGRIND_COMMAND}.
+      USE_VALGRIND default options: --leak-check=full --gen-suppressions=all --track-origins=yes
+      Options:
+        --show-leak-kinds=all - show all possible leak
+        --gen-suppressions=all - gen suppress info automatically
+        --track-origins=yes - locates the original position
+        --suppressions=\"${CMAKE_SOURCE_DIR}/valgrind_suppress.txt\" - use valgrind suppress config file"
+  )
+endif()
+
+if(NOT CMAKE_HOST_UNIX)
+  message(STATUS "Disable valgrind on non-unix system")
+  return()
+endif()
+
+if(VALGRIND_COMMAND)
+  set(VALGRIND_COMMAND_OPTIONS "${USE_VALGRIND}")
 else()
-  unset(VALGRIND_COMMAND CACHE)
-  unset(VALGRIND_COMMAND_OPTIONS CACHE)
+  message(WARNING "Not found valgrind, please check valgrind existence")
 endif()
