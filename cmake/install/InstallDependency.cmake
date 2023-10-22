@@ -3,6 +3,7 @@ This module provides tools to handle cmake installations painlessly.
 ]]
 
 include_guard(GLOBAL)
+include(${CMAKE_CURRENT_LIST_DIR}/Runpath.cmake)
 
 #[[
 A function to enable installation of dependencies as part of the
@@ -56,8 +57,6 @@ function(install_dependency)
   if(NOT DEFINED arg_DIRECTORIES)
     message(WARNING "DEPENDENIDES DIRECTORIES must be specified")
   endif()
-
-  include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/Runpath.cmake)
 
   if(NOT DEFINED arg_DESTINATION)
     set(arg_DESTINATION ${RUNPATH_SHARED_LOCATION})
