@@ -29,6 +29,8 @@ endif()
 # Append runtime path
 list(APPEND CMAKE_INSTALL_RPATH ${_rpath};$ORIGIN)
 message(STATUS "CMAKE_INSTALL_RPATH:${CMAKE_INSTALL_RPATH}")
+unset(_rpath)
+unset(_rel)
 
 # Add a variable about platform shared library location
 set(RUNPATH_SHARED_LOCATION
