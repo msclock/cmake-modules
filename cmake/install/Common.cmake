@@ -239,8 +239,32 @@ endfunction()
 
 #[[
 A function to provide a target to uninstall things from the command `cmake install`.
+
+It will create a file ``cmake_uninstall.cmake`` in the build directory and add a
+custom target ``uninstall`` (or ``UNINSTALL`` on Visual Studio and Xcode) that
+will remove the files installed by your package (using ``install_manifest.txt``).
+See also https://gitlab.kitware.com/cmake/community/wikis/FAQ#can-i-do-make-uninstall-with-cmake
+
 ]]
 function(create_uninstall_target)
+  # AddUninstallTarget works only when included in the main CMakeLists.txt
+  if(NOT "${CMAKE_CURRENT_BINARY_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+    return()
+  endif()
+
+  # The name of the target is uppercase in MSVC and Xcode (for coherence with
+  # the other standard targets)
+  if("${CMAKE_GENERATOR}" MATCHES "^(Visual Studio|Xcode)")
+    set(_uninstall "UNINSTALL")
+  else()
+    set(_uninstall "uninstall")
+  endif()
+
+  # If target is already defined don't do anything
+  if(TARGET ${_uninstall})
+    return()
+  endif()
+
   set(uninstall_script_config
       "if(NOT EXISTS \"@CMAKE_BINARY_DIR@/install_manifest.txt\")
   message(FATAL_ERROR \"Cannot find install manifest: @CMAKE_BINARY_DIR@/install_manifest.txt\")
@@ -269,13 +293,21 @@ endforeach()
   file(WRITE "${CMAKE_BINARY_DIR}/${_uninstall_file}.in"
        ${uninstall_script_config})
 
+  set(_comment COMMENT "Uninstall the project...")
+
   # uninstall target
-  if(NOT TARGET uninstall)
+  if(NOT TARGET ${_uninstall})
     configure_file("${CMAKE_BINARY_DIR}/${_uninstall_file}.in"
                    "${CMAKE_BINARY_DIR}/${_uninstall_file}" IMMEDIATE @ONLY)
 
-    add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P
-                                        ${CMAKE_BINARY_DIR}/${_uninstall_file})
+    add_custom_target(
+      ${_uninstall}
+      ${_comment}
+      COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/${_uninstall_file}
+      BYPRODUCTS uninstall_byproduct)
+    set_property(SOURCE uninstall_byproduct PROPERTY SYMBOLIC 1)
+
+    set_property(TARGET ${_uninstall} PROPERTY FOLDER "CMakePredefinedTargets")
   endif()
 
 endfunction()
