@@ -220,13 +220,11 @@ function(_sphinx_generate_conf_py _target _cachedir)
   endif()
 
   if(NOT DEFINED SPHINX_VERSION)
-    set(SPHINX_VERSION
-        "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
-    )
+    set(SPHINX_VERSION "${CMAKE_PROJECT_VERSION}")
   endif()
 
   if(NOT DEFINED SPHINX_RELEASE)
-    set(SPHINX_RELEASE "${PROJECT_VERSION}")
+    set(SPHINX_RELEASE "${CMAKE_PROJECT_VERSION}")
   endif()
 
   if(NOT DEFINED SPHINX_LANGUAGE)

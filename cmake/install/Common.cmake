@@ -45,7 +45,7 @@ Example:
     NAME
     header
     VERSION
-    ${PROJECT_VERSION}
+    ${CMAKE_PROJECT_VERSION}
     INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/ # install subdirectories with /
     TARGETS
