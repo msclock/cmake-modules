@@ -1,3 +1,11 @@
+## [1.1.6](https://github.com/msclock/cmake-modules/compare/v1.1.5...v1.1.6) (2023-10-24)
+
+
+### Performance
+
+* improve install stability ([d6e9f08](https://github.com/msclock/cmake-modules/commit/d6e9f088e9332f81a4d7f655f1d86700cb25fbb4))
+* unset prefix _ variables ([19776a3](https://github.com/msclock/cmake-modules/commit/19776a31087e87c6e468a9c684a5781798b95b80))
+
 ## [1.1.5](https://github.com/msclock/cmake-modules/compare/v1.1.4...v1.1.5) (2023-10-22)
 
 
