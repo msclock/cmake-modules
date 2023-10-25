@@ -1,3 +1,10 @@
+## [1.2.0](https://github.com/msclock/cmake-modules/compare/v1.1.6...v1.2.0) (2023-10-25)
+
+
+### Features
+
+* add git tools module ([dfe2eab](https://github.com/msclock/cmake-modules/commit/dfe2eabc645c0721ed94b7c24d90da51d7eb58a1))
+
 ## [1.1.6](https://github.com/msclock/cmake-modules/compare/v1.1.5...v1.1.6) (2023-10-24)
 
 
