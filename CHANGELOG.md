@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/msclock/cmake-modules/compare/v1.2.0...v1.2.1) (2023-10-25)
+
+
+### Performance
+
+* add a license install option to install_target ([293e8cc](https://github.com/msclock/cmake-modules/commit/293e8ccdb7add4269bb4a2ac31c8efed0179b48e))
+
 ## [1.2.0](https://github.com/msclock/cmake-modules/compare/v1.1.6...v1.2.0) (2023-10-25)
 
 
