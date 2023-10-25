@@ -3,6 +3,7 @@ This module provides some common tools.
 ]]
 
 include_guard(GLOBAL)
+include(${CMAKE_CURRENT_LIST_DIR}/InstallCopyright.cmake)
 
 #[[
 Show installation directories
@@ -57,7 +58,7 @@ Example:
 function(install_target)
   set(_opts)
   set(_single_opts NAME VERSION COMPATIBILITY CONFIGURE_PACKAGE_CONFIG_FILE)
-  set(_multi_opts TARGETS INCLUDES INCLUDE_FILES DEPENDENCIES)
+  set(_multi_opts TARGETS INCLUDES INCLUDE_FILES DEPENDENCIES LICENSE_FILE_LIST)
   cmake_parse_arguments(PARSE_ARGV 0 arg "${_opts}" "${_single_opts}"
                         "${_multi_opts}")
 
@@ -83,6 +84,11 @@ function(install_target)
   if(arg_INCLUDE_FILES)
     install(FILES ${arg_INCLUDE_FILES}
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${arg_NAME})
+  endif()
+
+  if(arg_LICENSE_FILE_LIST)
+    install_copyright(FILE_LIST ${arg_LICENSE_FILE_LIST} DESTINATION
+                      share/${arg_NAME})
   endif()
 
   install(
