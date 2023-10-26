@@ -101,10 +101,11 @@ function(install_copyright)
   endif()
 
   string(RANDOM random_suffix)
-  file(WRITE "${CMAKE_BINARY_DIR}/copyright/copyright_${random_suffix}"
-       "${out_string}")
+  set(_cache_dir ${CMAKE_BINARY_DIR}/${CMAKE_CURRENT_FUNCTION}/copyright)
+
+  file(WRITE "${_cache_dir}/copyright_${random_suffix}" "${out_string}")
   install(
-    FILES "${CMAKE_BINARY_DIR}/copyright/copyright_${random_suffix}"
+    FILES "${_cache_dir}/copyright_${random_suffix}"
     DESTINATION "${arg_DESTINATION}"
     RENAME copyright)
 endfunction()

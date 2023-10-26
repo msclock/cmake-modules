@@ -98,6 +98,8 @@ function(install_target)
     DESTINATION share/${arg_NAME}
     COMPONENT ${arg_NAME}_development)
 
+  set(_cache_dir ${CMAKE_BINARY_DIR}/${CMAKE_CURRENT_FUNCTION}/${arg_NAME})
+
   if(NOT arg_CONFIGURE_PACKAGE_CONFIG_FILE)
 
     set(_configure_package_config_file_content
@@ -186,17 +188,16 @@ include(\"\${CMAKE_CURRENT_LIST_DIR}/${arg_NAME}-targets.cmake\")
 check_required_components(${_tgts})
 ")
 
-    file(WRITE ${CMAKE_BINARY_DIR}/${arg_NAME}/${arg_NAME}-config.cmake.in
+    file(WRITE ${_cache_dir}/${arg_NAME}-config.cmake.in
          ${_configure_package_config_file_content})
     set(arg_CONFIGURE_PACKAGE_CONFIG_FILE
-        ${CMAKE_BINARY_DIR}/${arg_NAME}/${arg_NAME}-config.cmake.in)
+        ${_cache_dir}/${arg_NAME}-config.cmake.in)
   endif()
 
   include(CMakePackageConfigHelpers)
 
   configure_package_config_file(
-    ${arg_CONFIGURE_PACKAGE_CONFIG_FILE}
-    ${CMAKE_CURRENT_BINARY_DIR}/${arg_NAME}-config.cmake
+    ${arg_CONFIGURE_PACKAGE_CONFIG_FILE} ${_cache_dir}/${arg_NAME}-config.cmake
     INSTALL_DESTINATION share/${arg_NAME})
 
   if(NOT arg_COMPATIBILITY)
@@ -208,18 +209,18 @@ check_required_components(${_tgts})
   endif()
 
   write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/${arg_NAME}-config-version.cmake
+    ${_cache_dir}/${arg_NAME}-config-version.cmake
     VERSION ${arg_VERSION}
     COMPATIBILITY ${arg_COMPATIBILITY})
 
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${arg_NAME}-config.cmake
-                ${CMAKE_CURRENT_BINARY_DIR}/${arg_NAME}-config-version.cmake
+  install(FILES ${_cache_dir}/${arg_NAME}-config.cmake
+                ${_cache_dir}/${arg_NAME}-config-version.cmake
           DESTINATION share/${arg_NAME})
 
   # Export from build tree
   export(
     EXPORT ${arg_NAME}-targets
-    FILE ${CMAKE_CURRENT_BINARY_DIR}/${arg_NAME}-targets.cmake
+    FILE ${_cache_dir}/${arg_NAME}-targets.cmake
     NAMESPACE ${arg_NAME}::)
 
   export(PACKAGE ${arg_NAME})
@@ -236,9 +237,8 @@ check_required_components(${_tgts})
    find_package(${arg_NAME} CONFIG REQUIRED)
    target_link_libraries(main PRIVATE ${_usage_targets})
 ")
-  file(WRITE ${CMAKE_BINARY_DIR}/${arg_NAME}/usage ${USAGE_FILE_CONTENT})
-  install(FILES ${CMAKE_BINARY_DIR}/${arg_NAME}/usage
-          DESTINATION share/${arg_NAME})
+  file(WRITE ${_cache_dir}/usage ${USAGE_FILE_CONTENT})
+  install(FILES ${_cache_dir}/usage DESTINATION share/${arg_NAME})
   install(CODE "MESSAGE(STATUS \"${USAGE_FILE_CONTENT}\")")
 
 endfunction()
@@ -271,6 +271,8 @@ function(create_uninstall_target)
     return()
   endif()
 
+  set(_cache_dir ${CMAKE_BINARY_DIR}/${CMAKE_CURRENT_FUNCTION})
+
   set(uninstall_script_config
       "if(NOT EXISTS \"@CMAKE_BINARY_DIR@/install_manifest.txt\")
   message(FATAL_ERROR \"Cannot find install manifest: @CMAKE_BINARY_DIR@/install_manifest.txt\")
@@ -295,21 +297,19 @@ foreach(file \${files})
 endforeach()
 ")
 
-  set(_uninstall_file "cmake_uninstall.cmake")
-  file(WRITE "${CMAKE_BINARY_DIR}/${_uninstall_file}.in"
-       ${uninstall_script_config})
+  set(_uninstall_file "${_cache_dir}/cmake_uninstall.cmake")
+  file(WRITE "${_uninstall_file}.in" ${uninstall_script_config})
 
   set(_comment COMMENT "Uninstall the project...")
 
   # uninstall target
   if(NOT TARGET ${_uninstall})
-    configure_file("${CMAKE_BINARY_DIR}/${_uninstall_file}.in"
-                   "${CMAKE_BINARY_DIR}/${_uninstall_file}" IMMEDIATE @ONLY)
+    configure_file("${_uninstall_file}.in" "${_uninstall_file}" IMMEDIATE @ONLY)
 
     add_custom_target(
       ${_uninstall}
       ${_comment}
-      COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/${_uninstall_file}
+      COMMAND ${CMAKE_COMMAND} -P ${_uninstall_file}
       BYPRODUCTS uninstall_byproduct)
     set_property(SOURCE uninstall_byproduct PROPERTY SYMBOLIC 1)
 
