@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/msclock/cmake-modules/compare/v1.2.1...v1.2.2) (2023-10-26)
+
+
+### Performance
+
+* perfer cache dir built with CMAKE_CURRENT_FUNCTION ([92dd3d3](https://github.com/msclock/cmake-modules/commit/92dd3d34f6c34d23f6195be78f68379cb64cd78a))
+
 ## [1.2.1](https://github.com/msclock/cmake-modules/compare/v1.2.0...v1.2.1) (2023-10-25)
 
 
