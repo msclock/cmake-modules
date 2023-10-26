@@ -43,7 +43,8 @@ In this case, the coverage information reported will will be that of the
 
  add_executable(theExe main.cpp)
  target_link_libraries(theExe PRIVATE theLib)
- target_code_coverage(theExe) # As an executable target, adds the 'ccov-theExe' target (instrumentation already added via global nyways) for generating code coverage reports.
+ # As an executable target, adds the 'ccov-theExe' target (instrumentation already added via global nyways) for generating code coverage reports.
+ target_code_coverage(theExe)
  ~~~
 
 1b: Via target commands
@@ -54,7 +55,8 @@ In this case, the coverage information reported will will be that of the
 
  add_executable(theExe main.cpp)
  target_link_libraries(theExe PRIVATE theLib)
- target_code_coverage(theExe) # As an executable target, adds the 'ccov-theExe' target and instrumentation for generating code overage reports.
+ # As an executable target, adds the 'ccov-theExe' target and instrumentation for generating code overage reports.
+ target_code_coverage(theExe)
  ~~~
 
 Example 2: Target instrumented, but with regex pattern of files to be excluded
@@ -62,7 +64,8 @@ from report
 
  ~~~
  add_executable(theExe main.cpp non_covered.cpp)
- target_code_coverage(theExe EXCLUDE non_covered.cpp test/*) # As an executable target, the reports will exclude the non-covered.pp file, and any files in a test/ folder.
+ # As an executable target, the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
+ target_code_coverage(theExe EXCLUDE non_covered.cpp test/*)
  ~~~
 
 Example 3: Target added to the 'ccov' and 'ccov-all' targets
@@ -71,7 +74,8 @@ Example 3: Target added to the 'ccov' and 'ccov-all' targets
  add_code_coverage_all_targets(EXCLUDE test/*) # Adds the 'ccov-all' target set and sets it to exclude all files in test/ folders.
 
  add_executable(theExe main.cpp non_covered.cpp)
- target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an executable target, adds to the 'ccov' and ccov-all' argets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
+ # As an executable target, adds to the 'ccov' and ccov-all' argets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
+ target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*)
  ~~~
 
 Enable ctest *Coverage, such as ctest -T Experimental[Coverage] by msclock
@@ -80,7 +84,7 @@ Enable ctest *Coverage, such as ctest -T Experimental[Coverage] by msclock
 # Options
 option(
   CODE_COVERAGE
-  "Builds targets with code coverage instrumentation. (Requires GCC or Clang)"
+  "Builds targets with code coverage instrumentation. (Require GCC or Clang)"
   ON)
 
 # Programs
@@ -101,7 +105,8 @@ set_property(GLOBAL PROPERTY JOB_POOLS ccov_serial_pool=1)
 if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
   set(CODE_COVERAGE_ADDED ON)
 
-  # Enable ctest *Coverage, such as ctest -T Experimental[Coverage]
+  # Enable ctest *Coverage, such as ctest -T
+  # Continuous/Experimental/Nightly[Coverage]
   if(CMAKE_C_COMPILER_ID MATCHES [[(Apple)?Clang]] OR CMAKE_CXX_COMPILER_ID
                                                       MATCHES [[(Apple)?Clang]])
     set(COVERAGE_COMMAND
@@ -121,12 +126,22 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
 
   # Common Targets
   file(MAKE_DIRECTORY ${CMAKE_COVERAGE_OUTPUT_DIRECTORY})
-  message(STATUS "CMAKE_C_COMPILER_ID:${CMAKE_C_COMPILER_ID}")
-  message(STATUS "CMAKE_CXX_COMPILER_ID:${CMAKE_CXX_COMPILER_ID}")
+
   if(CMAKE_C_COMPILER_ID MATCHES [[(Apple)?Clang]] OR CMAKE_CXX_COMPILER_ID
                                                       MATCHES [[(Apple)?Clang]])
-    # Messages
-    message(STATUS "Building with llvm Code Coverage Tools")
+    if(CMAKE_C_COMPILER_ID MATCHES [[AppleClang]] OR CMAKE_CXX_COMPILER_ID
+                                                     MATCHES [[AppleClang]])
+      # When on macOS and using the Apple-provided toolchain, use the
+      # XCode-provided llvm toolchain via `xcrun`
+      message(
+        STATUS
+          "Building with XCode-provided llvm code coverage tools (via `xcrun`)")
+      set(LLVM_COV_PATH xcrun llvm-cov)
+      set(LLVM_PROFDATA_PATH xcrun llvm-profdata)
+    else()
+      # Use the regular llvm toolchain
+      message(STATUS "Building with llvm code coverage tools")
+    endif()
 
     if(NOT LLVM_COV_PATH)
       message(FATAL_ERROR "llvm-cov not found! Aborting.")
@@ -198,8 +213,8 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
     # Targets
     add_custom_target(ccov-clean COMMAND ${LCOV_PATH} --directory
                                          ${CMAKE_BINARY_DIR} --zerocounters)
-  elseif(CMAKE_C_COMPILER_ID MATCHES "MSVC" OR CMAKE_CXX_COMPILER_ID MATCHES
-                                               "MSVC")
+  elseif(CMAKE_C_COMPILER_ID MATCHES [[MSVC]] OR CMAKE_CXX_COMPILER_ID MATCHES
+                                                 [[MSVC]])
     # Enable VS CodeCoverage by static code coverage
     if(WIN32 AND MSVC)
       add_link_options(/PROFILE)
@@ -241,13 +256,14 @@ endif()
 # COVERAGE_TARGET_NAME - For executables ONLY, changes the outgoing target name so instead of `ccov-${TARGET_NAME}` it becomes `ccov-${COVERAGE_TARGET_NAME}`.
 # EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Note that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex! **These do not copy to the 'all' targets.**
 # OBJECTS <TARGETS> - For executables ONLY, if the provided targets are shared libraries, adds coverage information to the output
-# ARGS <ARGUMENTS> - For executables ONLY, appends the given arguments to the associated ccov-* executable call
+# PRE_ARGS <ARGUMENTS> - For executables ONLY, prefixes given arguments to the associated ccov-* executable call ($<PRE_ARGS> ccov-*)
+# ARGS <ARGUMENTS> - For executables ONLY, appends the given arguments to the associated ccov-* executable call (ccov-* $<ARGS>)
 # ~~~
 function(target_code_coverage TARGET_NAME)
   # Argument parsing
   set(_opts AUTO ALL EXTERNAL PUBLIC INTERFACE PLAIN)
   set(_single_opts COVERAGE_TARGET_NAME)
-  set(_multi_opts EXCLUDE OBJECTS ARGS)
+  set(_multi_opts EXCLUDE OBJECTS PRE_ARGS ARGS)
   cmake_parse_arguments(PARSE_ARGV 0 "arg" "${_opts}" "${_single_opts}"
                         "${_multi_opts}")
 
@@ -416,7 +432,8 @@ function(target_code_coverage TARGET_NAME)
         # Run the executable, generating coverage information
         add_custom_target(
           ccov-run-${arg_COVERAGE_TARGET_NAME}
-          COMMAND $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
+          COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} ${arg_PRE_ARGS}
+                  $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
           DEPENDS ${TARGET_NAME})
 
         # Generate exclusion string for use
@@ -442,7 +459,8 @@ function(target_code_coverage TARGET_NAME)
             ccov-capture-${arg_COVERAGE_TARGET_NAME}
             COMMAND ${CMAKE_COMMAND} -E remove -f ${COVERAGE_INFO}
             COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-            COMMAND $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
+            COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} ${arg_PRE_ARGS}
+                    $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
             COMMAND
               ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
               ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
@@ -454,7 +472,8 @@ function(target_code_coverage TARGET_NAME)
             ccov-capture-${arg_COVERAGE_TARGET_NAME}
             COMMAND ${CMAKE_COMMAND} -E rm -f ${COVERAGE_INFO}
             COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --zerocounters
-            COMMAND $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
+            COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} ${arg_PRE_ARGS}
+                    $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
             COMMAND
               ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
               ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
@@ -606,15 +625,28 @@ function(add_code_coverage_all_targets)
 
       # Export coverage information so continuous integration tools (e.g.
       # Jenkins) can consume it
-      add_custom_target(
-        ccov-all-export
-        COMMAND
-          ${LLVM_COV_PATH} export `cat
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
-          -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
-          -format="text" ${EXCLUDE_REGEX} >
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
-        DEPENDS ccov-all-processing)
+      if(WIN32)
+        add_custom_target(
+          ccov-all-export
+          COMMAND
+            powershell -Command $$FILELIST = Get-Content
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list\; llvm-cov.exe
+            export $$FILELIST
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+            -format="text" ${EXCLUDE_REGEX} >
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
+          DEPENDS ccov-all-processing)
+      else()
+        add_custom_target(
+          ccov-all-export
+          COMMAND
+            ${LLVM_COV_PATH} export `cat
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+            -format="text" ${EXCLUDE_REGEX} >
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
+          DEPENDS ccov-all-processing)
+      endif()
 
       # Generate HTML output of all added targets for perusal
       if(WIN32)
