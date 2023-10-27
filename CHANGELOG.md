@@ -1,3 +1,20 @@
+## [1.2.3](https://github.com/msclock/cmake-modules/compare/v1.2.2...v1.2.3) (2023-10-27)
+
+
+### Performance
+
+* improve Coverage ([10654d3](https://github.com/msclock/cmake-modules/commit/10654d38326f87354a7c1b34f89571bd4d29eb56))
+
+
+### CI
+
+* use setup-python@v4 ([1cbe4f1](https://github.com/msclock/cmake-modules/commit/1cbe4f11a168005960f2a66dbebb43353722e29f))
+
+
+### Docs
+
+* fix typo in changelog ([ddc028b](https://github.com/msclock/cmake-modules/commit/ddc028b0ea7040409a3e0c139ce360891506365c))
+
 ## [1.2.2](https://github.com/msclock/cmake-modules/compare/v1.2.1...v1.2.2) (2023-10-26)
 
 
