@@ -1,7 +1,12 @@
 #[[
 This scripts setup a runpath properly when use add_library to generate
 shared libraries or executables. The path will be pointed to lib or
-executable directory by variable CMAKE_INSTALL_BIN.
+executable directory by variable CMAKE_INSTALL_BIN. It also exports
+some variables as below:
+  - RUNPATH_SHARED_LOCATION: platform shared library location
+  - RUNPATH_VCPKG_DPENDENCY_PATH: vcpkg library paths
+  - RUNPATH_SYSTEM_DEPENDENCY_PATH: system paths
+  - RUNPATH_DEPENDENCY_PATH: paths made of the above variables
 ]]
 
 include_guard(GLOBAL)
@@ -37,7 +42,17 @@ set(RUNPATH_SHARED_LOCATION
     $<IF:$<PLATFORM_ID:Windows>,${CMAKE_INSTALL_BINDIR},${CMAKE_INSTALL_LIBDIR}>
 )
 
+# Set full dependency search path
+set(RUNPATH_DEPENDENCY_PATH)
+
 # Add a variable about vcpkg dependency path
 set(RUNPATH_VCPKG_DPENDENCY_PATH
     ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}$<IF:$<CONFIG:Debug>,/deubg/${RUNPATH_SHARED_LOCATION},/${RUNPATH_SHARED_LOCATION}>
 )
+list(APPEND RUNPATH_DEPENDENCY_PATH ${RUNPATH_VCPKG_DPENDENCY_PATH})
+
+# Add dynamic libraries search path using system paths
+if(DEFINED ENV{PATH})
+  string(REPLACE "\\" "/" RUNPATH_SYSTEM_DEPENDENCY_PATH "$ENV{PATH}")
+  list(APPEND RUNPATH_DEPENDENCY_PATH ${RUNPATH_SYSTEM_DEPENDENCY_PATH})
+endif()
