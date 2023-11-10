@@ -1,3 +1,10 @@
+## [1.2.4](https://github.com/msclock/cmake-modules/compare/v1.2.3...v1.2.4) (2023-11-10)
+
+
+### Performance
+
+* add system paths ([150d384](https://github.com/msclock/cmake-modules/commit/150d384f7c6f5c5627bb5638c3dd2b58fda1824a)), closes [#6](https://github.com/msclock/cmake-modules/issues/6)
+
 ## [1.2.3](https://github.com/msclock/cmake-modules/compare/v1.2.2...v1.2.3) (2023-10-27)
 
 
