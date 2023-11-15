@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/msclock/cmake-modules/compare/v1.2.4...v1.2.5) (2023-11-15)
+
+
+### Bug Fixes
+
+* install_target install runtime to lib location ([d1ffc42](https://github.com/msclock/cmake-modules/commit/d1ffc420bfc7a00af50e46168a40c91cb13484e5)), closes [#8](https://github.com/msclock/cmake-modules/issues/8)
+
 ## [1.2.4](https://github.com/msclock/cmake-modules/compare/v1.2.3...v1.2.4) (2023-11-10)
 
 
