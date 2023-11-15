@@ -67,11 +67,11 @@ function(install_target)
   install(
     TARGETS ${arg_TARGETS}
     EXPORT ${arg_NAME}-targets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}$<$<CONFIG:Debug>:/../debug/lib>
+    LIBRARY DESTINATION $<$<CONFIG:Debug>:debug/>${CMAKE_INSTALL_LIBDIR}
             COMPONENT ${arg_NAME}_runtime
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}$<$<CONFIG:Debug>:/../debug/lib>
+    ARCHIVE DESTINATION $<$<CONFIG:Debug>:debug/>${CMAKE_INSTALL_LIBDIR}
             COMPONENT ${arg_NAME}_runtime
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}$<$<CONFIG:Debug>:/../debug/lib>
+    RUNTIME DESTINATION $<$<CONFIG:Debug>:debug/>${CMAKE_INSTALL_BINDIR}
             COMPONENT ${arg_NAME}_runtime
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${arg_NAME}
                   COMPONENT ${arg_NAME}_development)
