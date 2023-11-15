@@ -98,7 +98,8 @@ function(install_target)
     DESTINATION share/${arg_NAME}
     COMPONENT ${arg_NAME}_development)
 
-  set(_cache_dir ${CMAKE_BINARY_DIR}/${CMAKE_CURRENT_FUNCTION}/${arg_NAME})
+  set(_cache_dir
+      ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CURRENT_FUNCTION}/${arg_NAME})
 
   if(NOT arg_CONFIGURE_PACKAGE_CONFIG_FILE)
 
