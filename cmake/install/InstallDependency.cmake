@@ -12,6 +12,8 @@ A function to enable installation of dependencies as part of the
 Arguments:
   TARGETS - a list of installed targets to have dependencies copied for. (required)
   DIRECTORIES - directories to search dependencies. Default to ${RUNPATH_DEPENDENCY_PATH}. (optional)
+  DEPENDS_DESTINATION - the runtime dependency installation directory for installed
+    targets. Default to $<$<CONFIG:Debug>:debug/>${RUNPATH_SHARED_LOCATION}.(optional)
   PRE_EXCLUDE_REGEXES - regular expressions to handle results. (optional)
   POST_EXCLUDE_REGEXES - regular expressions to handle results. (optional)
   POST_INCLUDE_REGEXES - regular expressions to handle results. (optional)
@@ -22,6 +24,8 @@ Examples:
   add_library(shared SHARED shared.cpp)
   add_executable(${app} main.cpp)
 
+  install(TARGETS ${app}
+          RUNTIME DESTINATION $<$<CONFIG:Debug>:debug/>${CMAKE_INSTALL_BINDIR})
   install_dependency(TARGETS ${app})
 
 Note:
@@ -34,7 +38,7 @@ function(install_dependency)
   endif()
 
   set(_opts)
-  set(_single_opts DESTINATION)
+  set(_single_opts DEPENDS_DESTINATION)
   set(_multi_opts TARGETS DIRECTORIES PRE_EXCLUDE_REGEXES POST_EXCLUDE_REGEXES
                   POST_INCLUDE_REGEXES)
   cmake_parse_arguments(PARSE_ARGV 0 arg "${_opts}" "${_single_opts}"
@@ -51,21 +55,23 @@ function(install_dependency)
     set(arg_DIRECTORIES ${RUNPATH_DEPENDENCY_PATH})
   endif()
 
+  # Configure dependency installation destination
+  if(NOT DEFINED arg_DEPENDS_DESTINATION)
+    set(arg_DEPENDS_DESTINATION
+        $<$<CONFIG:Debug>:debug/>${RUNPATH_SHARED_LOCATION})
   endif()
 
-  if(NOT DEFINED arg_DESTINATION)
-    set(arg_DESTINATION ${RUNPATH_SHARED_LOCATION})
+  if(NOT IS_ABSOLUTE "${arg_DEPENDS_DESTINATION}")
+    set(arg_DEPENDS_DESTINATION
+        "\${CMAKE_INSTALL_PREFIX}/${arg_DEPENDS_DESTINATION}")
   endif()
 
   # Install CODE|SCRIPT allow the use of generator expressions
   cmake_policy(PUSH)
+
   # set CMP0087 install code for generator-expression
   if(POLICY CMP0048)
     cmake_policy(SET CMP0087 NEW)
-  endif()
-
-  if(NOT IS_ABSOLUTE "${arg_DESTINATION}")
-    set(arg_DESTINATION "\${CMAKE_INSTALL_PREFIX}/${arg_DESTINATION}")
   endif()
 
   list(APPEND arg_PRE_EXCLUDE_REGEXES "")
@@ -126,16 +132,16 @@ function(install_dependency)
       "libpthread[\.]" # pthread lib
       "libpython" # python lib
       "pylibc[\.\-]") # Linux API
-  else()
-    message(
-      FATAL_ERROR "We can not confirm the current platform when installing")
+
+    # exclude system dlls directories later
+    list(APPEND arg_POST_EXCLUDE_REGEXES "x86_64-linux-gnu")
   endif()
 
   install(CODE "set(arg_DIRECTORIES \"${arg_DIRECTORIES}\")")
   install(CODE "set(arg_PRE_EXCLUDE_REGEXES \"${arg_PRE_EXCLUDE_REGEXES}\")")
   install(CODE "set(arg_POST_EXCLUDE_REGEXES \"${arg_POST_EXCLUDE_REGEXES}\")")
   install(CODE "set(arg_POST_INCLUDE_REGEXES \"${arg_POST_INCLUDE_REGEXES}\")")
-  install(CODE "set(arg_DESTINATION \"${arg_DESTINATION}\")")
+  install(CODE "set(arg_DEPENDS_DESTINATION \"${arg_DEPENDS_DESTINATION}\")")
   foreach(target IN LISTS arg_TARGETS)
     get_target_property(target_type "${target}" TYPE)
     message(STATUS "target_type:${target_type};$<TARGET_FILE_NAME:${target}>")
@@ -199,7 +205,7 @@ function(install_dependency)
               foreach(_file ${_c_file_list})
                 file(
                   INSTALL
-                  DESTINATION "${arg_DESTINATION}"
+                  DESTINATION "${arg_DEPENDS_DESTINATION}"
                   TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
               endforeach()
             endforeach()
