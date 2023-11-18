@@ -11,8 +11,7 @@ A function to enable installation of dependencies as part of the
 
 Arguments:
   TARGETS - a list of installed targets to have dependencies copied for. (required)
-  DIRECTORIES - the directories to search dependencies. (required)
-  DESTINATION - the runtime directory for those targets (usually `$<IF:$<PLATFORM_ID:Windows>,bin,lib>`).(optional)
+  DIRECTORIES - directories to search dependencies. Default to ${RUNPATH_DEPENDENCY_PATH}. (optional)
   PRE_EXCLUDE_REGEXES - regular expressions to handle results. (optional)
   POST_EXCLUDE_REGEXES - regular expressions to handle results. (optional)
   POST_INCLUDE_REGEXES - regular expressions to handle results. (optional)
@@ -23,13 +22,7 @@ Examples:
   add_library(shared SHARED shared.cpp)
   add_executable(${app} main.cpp)
 
-  install(
-    TARGETS ${app}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-  install_dependency(
-    TARGETS ${app}
-    DIRECTORIES /opt/to/dependencies/find/path)
+  install_dependency(TARGETS ${app})
 
 Note:
   This requires CMake 3.14 for policy CMP0087
@@ -55,7 +48,9 @@ function(install_dependency)
   endif()
 
   if(NOT DEFINED arg_DIRECTORIES)
-    message(WARNING "DEPENDENIDES DIRECTORIES must be specified")
+    set(arg_DIRECTORIES ${RUNPATH_DEPENDENCY_PATH})
+  endif()
+
   endif()
 
   if(NOT DEFINED arg_DESTINATION)
