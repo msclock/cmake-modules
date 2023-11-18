@@ -75,8 +75,12 @@ function(install_dependency)
 
   list(APPEND arg_PRE_EXCLUDE_REGEXES "")
   list(APPEND arg_POST_EXCLUDE_REGEXES "")
+
+  # Include debug shared system libs earlier
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    list(APPEND arg_POST_INCLUDE_REGEXES ".*d.dll")
+    if(CMAKE_HOST_SYSTEM_NAME MATCHES [[Windows]])
+      list(APPEND arg_POST_INCLUDE_REGEXES ".*d.dll")
+    endif()
   endif()
   if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
     list(
