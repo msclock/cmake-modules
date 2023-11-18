@@ -173,13 +173,15 @@ function(install_dependency)
             POST_INCLUDE_REGEXES
               ${arg_POST_INCLUDE_REGEXES})
 
-          message(STATUS "Resolved dependencies: ${_r_deps}")
-          foreach(_file ${_r_deps})
-            file(
-              INSTALL
-              DESTINATION "${arg_DESTINATION}"
-              TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
-          endforeach()
+          if(_r_deps)
+            message(STATUS "Resolved dependencies: ${_r_deps}")
+            foreach(_file ${_r_deps})
+              file(
+                INSTALL
+                DESTINATION "${arg_DEPENDS_DESTINATION}"
+                TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
+            endforeach()
+          endif()
 
           if(_u_deps)
             message(STATUS "Unresolved dependencies: ${_u_deps}")
