@@ -82,7 +82,9 @@ function(install_dependency)
       list(APPEND arg_POST_INCLUDE_REGEXES ".*d.dll")
     endif()
   endif()
+
   if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+    # exclude windows API earlier
     list(
       APPEND
       arg_PRE_EXCLUDE_REGEXES
@@ -91,13 +93,15 @@ function(install_dependency)
       "ieshims.dll"
       "emclient.dll"
       "devicelockhelpers.dll"
-      "python*.dll") # windows API
-    list(APPEND arg_POST_EXCLUDE_REGEXES "WINDOWS" "system32") # system dlls
-  elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+      "python*.dll")
+
+    # exclude system dlls directories later
+    list(APPEND arg_POST_EXCLUDE_REGEXES "WINDOWS" "system32")
+  else()
+    # exclude windows API earlier
     list(
       APPEND
       arg_PRE_EXCLUDE_REGEXES
-      "/cmov/"
       "ld-linux[\.\-]"
       "libc[\.\-]"
       "libdl[\.\-]"
