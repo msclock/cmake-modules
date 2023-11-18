@@ -1,3 +1,10 @@
+## [1.2.6](https://github.com/msclock/cmake-modules/compare/v1.2.5...v1.2.6) (2023-11-18)
+
+
+### Performance
+
+* prefer CMAKE_CURRENT_BINARY_DIR ([351de26](https://github.com/msclock/cmake-modules/commit/351de26757f50003963ddacbba3e7184b70edf99)), closes [#10](https://github.com/msclock/cmake-modules/issues/10)
+
 ## [1.2.5](https://github.com/msclock/cmake-modules/compare/v1.2.4...v1.2.5) (2023-11-15)
 
 
