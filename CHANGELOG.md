@@ -1,3 +1,18 @@
+## [1.2.7](https://github.com/msclock/cmake-modules/compare/v1.2.6...v1.2.7) (2023-11-18)
+
+
+### Bug Fixes
+
+* always install depends to lib or bin ([d39a62f](https://github.com/msclock/cmake-modules/commit/d39a62f3764386225f80f1fa7e75fc8bd2aba355)), closes [#14](https://github.com/msclock/cmake-modules/issues/14)
+* fatal error with install_dependency ([90c0f1b](https://github.com/msclock/cmake-modules/commit/90c0f1b000df4518268728bcb341dc3af6ade87f)), closes [#12](https://github.com/msclock/cmake-modules/issues/12)
+
+
+### Performance
+
+* default to RUNPATH_DEPENDENCY_PATH ([7a54c73](https://github.com/msclock/cmake-modules/commit/7a54c73c3c4fe2f1cc34f839163a13f472c22b09)), closes [#13](https://github.com/msclock/cmake-modules/issues/13)
+* disable empty resolved dependencies outputs ([9e49540](https://github.com/msclock/cmake-modules/commit/9e49540992c58bca56004981f6cf5fc40bf97f2c))
+* include debug shared system libs ([d5753c9](https://github.com/msclock/cmake-modules/commit/d5753c9d2719e5631fb3d25a21765ed0e7fafc14))
+
 ## [1.2.6](https://github.com/msclock/cmake-modules/compare/v1.2.5...v1.2.6) (2023-11-18)
 
 
