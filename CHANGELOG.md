@@ -1,3 +1,10 @@
+## [1.3.0](https://github.com/msclock/cmake-modules/compare/v1.2.8...v1.3.0) (2023-11-19)
+
+
+### Features
+
+* add a GoogleTest.cmake module ([fd0cceb](https://github.com/msclock/cmake-modules/commit/fd0cceb758e057e1a4fa7331b4370049a0c9a736)), closes [#18](https://github.com/msclock/cmake-modules/issues/18)
+
 ## [1.2.8](https://github.com/msclock/cmake-modules/compare/v1.2.7...v1.2.8) (2023-11-19)
 
 
