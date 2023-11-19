@@ -8,4 +8,4 @@ Default to configuration.
 set(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE ON)
 
 # Open FetchContent fetching logs.
-set(FETCHCONTENT_QUIET OFF)
+set(FETCHCONTENT_QUIET ON)
