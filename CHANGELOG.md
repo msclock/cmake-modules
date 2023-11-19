@@ -1,3 +1,10 @@
+## [1.2.8](https://github.com/msclock/cmake-modules/compare/v1.2.7...v1.2.8) (2023-11-19)
+
+
+### Performance
+
+* disable to open FetchContent fetching logs ([b01e2c8](https://github.com/msclock/cmake-modules/commit/b01e2c898f7a6e70128c7595ece34f22f5fdcda7)), closes [#17](https://github.com/msclock/cmake-modules/issues/17)
+
 ## [1.2.7](https://github.com/msclock/cmake-modules/compare/v1.2.6...v1.2.7) (2023-11-18)
 
 
