@@ -254,8 +254,8 @@ See also https://gitlab.kitware.com/cmake/community/wikis/FAQ#can-i-do-make-unin
 
 ]]
 function(create_uninstall_target)
-  # AddUninstallTarget works only when included in the main CMakeLists.txt
   if(NOT "${CMAKE_CURRENT_BINARY_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+    message(FATAL_ERROR "Works only when included in the main CMakeLists.txt")
     return()
   endif()
 
