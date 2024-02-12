@@ -145,18 +145,25 @@ function(install_dependency)
   foreach(target IN LISTS arg_TARGETS)
     get_target_property(target_type "${target}" TYPE)
     message(STATUS "target_type:${target_type};$<TARGET_FILE_NAME:${target}>")
-    if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+    if(NOT target_type STREQUAL "INTERFACE_LIBRARY"
+       AND NOT target_type STREQUAL "STATIC_LIBRARY")
 
       install(CODE "set(target_type \"${target_type}\")")
       install(CODE "set(target \"$<TARGET_FILE:${target}>\")")
       install(
         CODE [[
+
           set(library_target "")
           set(executable_target "")
+          set(module_target "")
           if(target_type STREQUAL "SHARED_LIBRARY")
             set(library_target ${target})
+          elseif(target_type STREQUAL "MODULE_LIBRARY")
+            set(module_target ${target})
           elseif(target_type STREQUAL "EXECUTABLE")
             set(executable_target ${target})
+          else()
+            message(FATAL_ERROR "Unknown target type to resolve dependencies ${target_type}")
           endif()
           file(
             GET_RUNTIME_DEPENDENCIES
@@ -164,6 +171,8 @@ function(install_dependency)
               ${executable_target}
             LIBRARIES
               ${library_target}
+            MODULES
+              ${module_target}
             RESOLVED_DEPENDENCIES_VAR
               _r_deps
             UNRESOLVED_DEPENDENCIES_VAR
@@ -210,6 +219,7 @@ function(install_dependency)
               endforeach()
             endforeach()
           endif()
+
       ]])
     endif()
   endforeach()
