@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/msclock/cmake-modules/compare/v1.3.0...v1.3.1) (2024-02-12)
+
+
+### Performance
+
+* throw error with create uninstall target ([ad5b2f0](https://github.com/msclock/cmake-modules/commit/ad5b2f0998ff1beffe12bd92b86eb0ed01e0505c))
+
 ## [1.3.0](https://github.com/msclock/cmake-modules/compare/v1.2.8...v1.3.0) (2023-11-19)
 
 
