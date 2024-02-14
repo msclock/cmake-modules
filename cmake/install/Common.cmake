@@ -275,7 +275,8 @@ function(create_uninstall_target)
   set(_cache_dir ${CMAKE_BINARY_DIR}/${CMAKE_CURRENT_FUNCTION})
 
   set(uninstall_script_config
-      "if(NOT EXISTS \"@CMAKE_BINARY_DIR@/install_manifest.txt\")
+      "
+if(NOT EXISTS \"@CMAKE_BINARY_DIR@/install_manifest.txt\")
   message(FATAL_ERROR \"Cannot find install manifest: @CMAKE_BINARY_DIR@/install_manifest.txt\")
 endif()
 
@@ -295,6 +296,29 @@ foreach(file \${files})
   else(IS_SYMLINK \"\$ENV{DESTDIR}\${file}\" OR EXISTS \"\$ENV{DESTDIR}\${file}\")
     message(STATUS \"File \$ENV{DESTDIR}\${file} does not exist.\")
   endif()
+endforeach()
+
+function(get_empty_dir check_dir result_dirs)
+  file(GLOB_RECURSE DIR_CONTENTS LIST_DIRECTORIES true RELATIVE \${check_dir} \${check_dir}/*)
+  list(REVERSE DIR_CONTENTS)
+
+  foreach(ITEM \${DIR_CONTENTS})
+    if(IS_DIRECTORY \${check_dir}/\${ITEM})
+      file(GLOB_RECURSE SUBDIR_CONTENTS \${check_dir}/\${ITEM}/*)
+
+      if(NOT SUBDIR_CONTENTS)
+        list(APPEND _empty \${check_dir}/\${ITEM})
+      endif()
+    endif()
+  endforeach()
+
+  set(\${result_dirs} \${_empty} PARENT_SCOPE)
+endfunction()
+
+get_empty_dir(@CMAKE_INSTALL_PREFIX@ result_dirs)
+
+foreach(empty_dir \${result_dirs})
+  file(REMOVE_RECURSE \${empty_dir})
 endforeach()
 ")
 
