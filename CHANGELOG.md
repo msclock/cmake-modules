@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/msclock/cmake-modules/compare/v1.3.2...v1.3.3) (2024-02-14)
+
+
+### Performance
+
+* remove folders recursively by cmake uninstall target ([#23](https://github.com/msclock/cmake-modules/issues/23)) ([706399c](https://github.com/msclock/cmake-modules/commit/706399c10fdb848b0bf0240f170ecd956190439b))
+
 ## [1.3.2](https://github.com/msclock/cmake-modules/compare/v1.3.1...v1.3.2) (2024-02-12)
 
 
