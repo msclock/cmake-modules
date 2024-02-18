@@ -1,3 +1,10 @@
+## [1.3.4](https://github.com/msclock/cmake-modules/compare/v1.3.3...v1.3.4) (2024-02-18)
+
+
+### Performance
+
+* runpath with preset GNUInstallDirs ([#24](https://github.com/msclock/cmake-modules/issues/24)) ([9e48484](https://github.com/msclock/cmake-modules/commit/9e48484ad6261b5f26d6238d8380d3ad8b5946e6))
+
 ## [1.3.3](https://github.com/msclock/cmake-modules/compare/v1.3.2...v1.3.3) (2024-02-14)
 
 
