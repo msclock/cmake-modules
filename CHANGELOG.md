@@ -1,3 +1,10 @@
+## [1.3.5](https://github.com/msclock/cmake-modules/compare/v1.3.4...v1.3.5) (2024-02-20)
+
+
+### Bug Fixes
+
+* cmake install prefix path substitution ([#25](https://github.com/msclock/cmake-modules/issues/25)) ([5d9a4a4](https://github.com/msclock/cmake-modules/commit/5d9a4a49b80bbc3be6c1bf5fb8a4e60860b0d6b8))
+
 ## [1.3.4](https://github.com/msclock/cmake-modules/compare/v1.3.3...v1.3.4) (2024-02-18)
 
 
