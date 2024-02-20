@@ -1,3 +1,10 @@
+## [1.3.6](https://github.com/msclock/cmake-modules/compare/v1.3.5...v1.3.6) (2024-02-20)
+
+
+### Performance
+
+* optimize to install system libs ([#26](https://github.com/msclock/cmake-modules/issues/26)) ([e0c2add](https://github.com/msclock/cmake-modules/commit/e0c2add6b208a17d8d3bece1e479fbc28372c473))
+
 ## [1.3.5](https://github.com/msclock/cmake-modules/compare/v1.3.4...v1.3.5) (2024-02-20)
 
 
