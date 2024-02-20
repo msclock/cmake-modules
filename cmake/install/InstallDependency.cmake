@@ -12,11 +12,11 @@ A function to enable installation of dependencies as part of the
 Arguments:
   TARGETS - a list of installed targets to have dependencies copied for. (required)
   DIRECTORIES - directories to search dependencies. Default to ${RUNPATH_DEPENDENCY_PATH}. (optional)
-  DEPENDS_DESTINATION - the runtime dependency installation directory for installed
-    targets. Default to $<$<CONFIG:Debug>:debug/>${RUNPATH_SHARED_LOCATION}.(optional)
+  DEPENDS_DESTINATION - the runtime dependency installation directory for installed targets. Default to $<$<CONFIG:Debug>:debug/>${RUNPATH_SHARED_LOCATION}.(optional)
   PRE_EXCLUDE_REGEXES - regular expressions to handle results. (optional)
   POST_EXCLUDE_REGEXES - regular expressions to handle results. (optional)
   POST_INCLUDE_REGEXES - regular expressions to handle results. (optional)
+  INSTALL_SYSTEM_LIBS - if present, all system libraries from include(InstallRequiredSystemLibraries) will be installed to ${DEPENDS_DESTINATION}. (optional)
 
 Examples:
   set(app ${CMAKE_PROJECT_NAME}_app)
@@ -37,7 +37,7 @@ function(install_dependency)
 (current version: ${CMAKE_VERSION})")
   endif()
 
-  set(_opts)
+  set(_opts INSTALL_SYSTEM_LIBS)
   set(_single_opts DEPENDS_DESTINATION)
   set(_multi_opts TARGETS DIRECTORIES PRE_EXCLUDE_REGEXES POST_EXCLUDE_REGEXES
                   POST_INCLUDE_REGEXES)
@@ -61,10 +61,25 @@ function(install_dependency)
         $<$<CONFIG:Debug>:debug/>${RUNPATH_SHARED_LOCATION})
   endif()
 
-  if(NOT IS_ABSOLUTE "${arg_DEPENDS_DESTINATION}")
-    set(arg_DEPENDS_DESTINATION
-        "\${CMAKE_INSTALL_PREFIX}/${arg_DEPENDS_DESTINATION}")
+  if(IS_ABSOLUTE "${arg_DEPENDS_DESTINATION}")
+    message(
+      FATAL_ERROR
+        "Must be relactive and invalid dependency destination: ${arg_DEPENDS_DESTINATION}"
+    )
   endif()
+
+  if(arg_INSTALL_SYSTEM_LIBS)
+    # Configure system runtime dependency installation destination
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ${arg_DEPENDS_DESTINATION})
+
+    # Include this module to search for compiler-provided system runtime
+    # libraries and add install rules for them.
+    include(InstallRequiredSystemLibraries)
+    unset(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION)
+  endif()
+
+  set(arg_DEPENDS_DESTINATION
+      "\${CMAKE_INSTALL_PREFIX}/${arg_DEPENDS_DESTINATION}")
 
   # Install CODE|SCRIPT allow the use of generator expressions
   cmake_policy(PUSH)
@@ -86,55 +101,51 @@ function(install_dependency)
 
   if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
     # exclude windows API earlier
-    list(
-      APPEND
-      arg_PRE_EXCLUDE_REGEXES
-      "api-ms-.*"
-      "ext-ms-.*"
-      "ieshims.dll"
-      "emclient.dll"
-      "devicelockhelpers.dll"
-      "python*.dll")
+    if(NOT arg_PRE_EXCLUDE_REGEXES)
+      list(APPEND arg_PRE_EXCLUDE_REGEXES "api-ms-.*" "ext-ms-.*"
+           "KERNEL32.dll")
+    endif()
 
     # exclude system dlls directories later
-    list(APPEND arg_POST_EXCLUDE_REGEXES "WINDOWS" "system32")
+    if(NOT arg_POST_EXCLUDE_REGEXES)
+      list(APPEND arg_POST_EXCLUDE_REGEXES "WINDOWS" "system32")
+    endif()
   else()
     # exclude windows API earlier
-    list(
-      APPEND
-      arg_PRE_EXCLUDE_REGEXES
-      "ld-linux[\.\-]"
-      "libc[\.\-]"
-      "libdl[\.\-]"
-      "libdrm[\.\-]"
-      "libelf[\.\-]"
-      "libexpat[\.\-]"
-      "libfontconfig[\.\-]"
-      "libfreetype[\.\-]"
-      "libg[\.\-]"
-      "libgcc_s[\.\-]"
-      "libGL[\.\-]"
-      "libglib[\.\-]"
-      "libgthread[\.\-]"
-      "lib(ice|ICE)[\.\-]"
-      "libnvidia[\.\-]"
-      "libpthread[\.\-]"
-      "libse(pol|linux)[\.\-]"
-      "libSM[\.\-]"
-      "libm[\.\-]"
-      "librt[\.\-]"
-      "libstdc[\+][\+][\.\-]"
-      "libX[a-zA-Z0-9]*[\.\-]"
-      "libxcb[\.\-]"
-      "libutil[\.]"
-      "libomp[\.]"
-      "libgomp[\.]" # omp lib
-      "libpthread[\.]" # pthread lib
-      "libpython" # python lib
-      "pylibc[\.\-]") # Linux API
+    if(NOT arg_PRE_EXCLUDE_REGEXES)
+      list(
+        APPEND
+        arg_PRE_EXCLUDE_REGEXES
+        "ld-linux[\.\-]"
+        "libc[\.\-]"
+        "libdl[\.\-]"
+        "libdrm[\.\-]"
+        "libelf[\.\-]"
+        "libexpat[\.\-]"
+        "libfontconfig[\.\-]"
+        "libfreetype[\.\-]"
+        "libg[\.\-]"
+        "libgcc_s[\.\-]"
+        "libGL[\.\-]"
+        "libglib[\.\-]"
+        "libgthread[\.\-]"
+        "lib(ice|ICE)[\.\-]"
+        "libnvidia[\.\-]"
+        "libpthread[\.\-]"
+        "libse(pol|linux)[\.\-]"
+        "libSM[\.\-]"
+        "libm[\.\-]"
+        "librt[\.\-]"
+        "libstdc[\+][\+][\.\-]"
+        "libX[a-zA-Z0-9]*[\.\-]"
+        "libxcb[\.\-]"
+        "libutil[\.]")
+    endif()
 
     # exclude system dlls directories later
-    list(APPEND arg_POST_EXCLUDE_REGEXES "x86_64-linux-gnu")
+    if(NOT arg_POST_EXCLUDE_REGEXES)
+      list(APPEND arg_POST_EXCLUDE_REGEXES "x86_64-linux-gnu")
+    endif()
   endif()
 
   install(CODE "set(arg_DIRECTORIES \"${arg_DIRECTORIES}\")")
@@ -142,12 +153,13 @@ function(install_dependency)
   install(CODE "set(arg_POST_EXCLUDE_REGEXES \"${arg_POST_EXCLUDE_REGEXES}\")")
   install(CODE "set(arg_POST_INCLUDE_REGEXES \"${arg_POST_INCLUDE_REGEXES}\")")
   install(CODE "set(arg_DEPENDS_DESTINATION \"${arg_DEPENDS_DESTINATION}\")")
+
   foreach(target IN LISTS arg_TARGETS)
     get_target_property(target_type "${target}" TYPE)
     message(STATUS "target_type:${target_type};$<TARGET_FILE_NAME:${target}>")
+
     if(NOT target_type STREQUAL "INTERFACE_LIBRARY"
        AND NOT target_type STREQUAL "STATIC_LIBRARY")
-
       install(CODE "set(target_type \"${target_type}\")")
       install(CODE "set(target \"$<TARGET_FILE:${target}>\")")
       install(
@@ -223,5 +235,6 @@ function(install_dependency)
       ]])
     endif()
   endforeach()
+
   cmake_policy(POP)
 endfunction()
