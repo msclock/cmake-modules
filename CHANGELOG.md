@@ -1,3 +1,10 @@
+## [1.3.7](https://github.com/msclock/cmake-modules/compare/v1.3.6...v1.3.7) (2024-03-05)
+
+
+### Performance
+
+* remove output dir before new generation ([#28](https://github.com/msclock/cmake-modules/issues/28)) ([8e1b36d](https://github.com/msclock/cmake-modules/commit/8e1b36d8ddca881d4bf902aaf28ded693783eafe))
+
 ## [1.3.6](https://github.com/msclock/cmake-modules/compare/v1.3.5...v1.3.6) (2024-02-20)
 
 
