@@ -458,6 +458,7 @@ function(sphinx_add_docs _target)
   # Add a custom target with the specified dependencies
   add_custom_target(
     ${_target} ALL
+    COMMAND ${CMAKE_COMMAND} -E rm -rf "${_outputdir}"
     COMMAND ${_Sphinx_executable} -b ${_builder} -c "${_cachedir}"
             "${_sourcedir}" "${_outputdir}"
     DEPENDS ${_depends})
