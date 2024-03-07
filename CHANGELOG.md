@@ -1,3 +1,10 @@
+## [1.3.9](https://github.com/msclock/cmake-modules/compare/v1.3.8...v1.3.9) (2024-03-07)
+
+
+### Performance
+
+* unset globals ([#30](https://github.com/msclock/cmake-modules/issues/30)) ([c108ef3](https://github.com/msclock/cmake-modules/commit/c108ef33fc597b5883423ea42c5e3d379b701773))
+
 ## [1.3.8](https://github.com/msclock/cmake-modules/compare/v1.3.7...v1.3.8) (2024-03-07)
 
 
