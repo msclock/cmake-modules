@@ -1,3 +1,10 @@
+## [1.3.8](https://github.com/msclock/cmake-modules/compare/v1.3.7...v1.3.8) (2024-03-07)
+
+
+### Performance
+
+* valgrind command setup ([#29](https://github.com/msclock/cmake-modules/issues/29)) ([aeb6391](https://github.com/msclock/cmake-modules/commit/aeb6391785a2a3d8c6ccd1d469de41721aeea447))
+
 ## [1.3.7](https://github.com/msclock/cmake-modules/compare/v1.3.6...v1.3.7) (2024-03-05)
 
 
