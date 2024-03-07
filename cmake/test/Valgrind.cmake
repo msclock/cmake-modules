@@ -36,7 +36,9 @@ find_program(
   DOC "valgrind executable")
 
 if(VALGRIND_COMMAND)
-  set(VALGRIND_COMMAND_OPTIONS "${USE_VALGRIND}")
+  set(VALGRIND_COMMAND_OPTIONS
+      "${USE_VALGRIND}"
+      CACHE STRING "valgrind options" FORCE)
 else()
   message(WARNING "Not found valgrind, please check valgrind existence")
 endif()
