@@ -16,8 +16,9 @@ Outputs:
 - If the current directory is a build directory, a status message is displayed.
 ]]
 
-file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
-if(EXISTS "${LOC_PATH}")
+file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" _loc_path)
+
+if(EXISTS "${_loc_path}")
   message(
     FATAL_ERROR
       "You cannot build in a source directory (or any directory with "
@@ -26,3 +27,5 @@ if(EXISTS "${LOC_PATH}")
 else()
   message(STATUS "Build directory check passed")
 endif()
+
+unset(_loc_path)
