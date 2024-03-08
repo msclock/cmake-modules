@@ -99,7 +99,6 @@ set(USE_SANITIZER
 message(
   STATUS
     "Activate sanitizer with USE_SANITIZER: ${USE_SANITIZER}
-  Address,Memory can not used in combination
   Options:
     Address - detects most issues dealing with memory.
     Memory - detects uninitialized reads.
@@ -107,8 +106,10 @@ message(
     Undefined - detects the use of various undefined behaviour
     Thread - detects data races for multi-threaded code.
     Leak - detects memory leaks.
-    CFI - detects potential undefined behaviours to subvert the program's control flow."
-)
+    CFI - detects potential undefined behaviours to subvert the program's control flow.
+    EnableMSVCAnnotations - enable Microsoft Visual C++ annotations.
+  Note:
+    - Address,Memory can not used in combination")
 
 string(TOLOWER "${USE_SANITIZER}" USE_SANITIZER)
 
@@ -150,6 +151,7 @@ function(copy_sanitizer_runtime target)
   else()
     set(ASAN_LIBRARY_NAME "clang_rt.asan_dynamic-${ASAN_ARCHITECTURE}.dll")
   endif()
+
   set(LLVM_SYMBOLIZER_NAME "llvm-symbolizer.exe")
 
   set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${ASAN_LIBRARY_NAME})
@@ -178,13 +180,14 @@ function(copy_sanitizer_runtime target)
     TARGET ${target} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LLVM_SYMBOLIZER_SOURCE}
             $<TARGET_FILE_DIR:${target}>)
-
 endfunction()
 
 if(USE_SANITIZER)
   unset(SANITIZER_SELECTED_FLAGS)
+
   if(NOT MSVC AND CMAKE_HOST_UNIX)
     append_variable("-fno-omit-frame-pointer" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
+
     if(CMAKE_BUILD_TYPE MATCHES [[DEBUG]])
       append_variable("-O1" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     endif()
@@ -194,6 +197,7 @@ if(USE_SANITIZER)
       message(DEBUG "Testing with Address sanitizer")
       set(SANITIZER_ADDR_FLAG "-fsanitize=address")
       check_flags_available(SANITIZER_ADDR_AVAILABLE ${SANITIZER_ADDR_FLAG})
+
       if(SANITIZER_ADDR_AVAILABLE)
         message(DEBUG "  Append flags: ${SANITIZER_ADDR_FLAG}")
         append_variable("${SANITIZER_ADDR_FLAG}" SANITIZER_SELECTED_FLAGS)
@@ -207,19 +211,23 @@ if(USE_SANITIZER)
     if(USE_SANITIZER MATCHES [[memory(withorigins)?]])
       # Optional: -fno-optimize-sibling-calls -fsanitize-memory-track-origins=2
       set(SANITIZER_MEM_FLAG "-fsanitize=memory")
+
       if(USE_SANITIZER MATCHES [[memorywithorigins]])
         message(DEBUG "Testing with MemoryWithOrigins sanitizer")
         append_variable("-fsanitize-memory-track-origins" SANITIZER_MEM_FLAG)
       else()
         message(DEBUG "Testing with Memory sanitizer")
       endif()
+
       check_flags_available(SANITIZER_MEM_AVAILABLE ${SANITIZER_MEM_FLAG})
+
       if(SANITIZER_MEM_AVAILABLE)
         if(USE_SANITIZER MATCHES [[memorywithorigins]])
           message(DEBUG "  Append flags: ${SANITIZER_MEM_FLAG}")
         else()
           message(DEBUG "  Append flags: ${SANITIZER_MEM_FLAG}")
         endif()
+
         append_variable("${SANITIZER_MEM_FLAG}" SANITIZER_SELECTED_FLAGS)
 
       else()
@@ -233,11 +241,14 @@ if(USE_SANITIZER)
     if(USE_SANITIZER MATCHES [[undefined]])
       message(DEBUG "Testing with Undefined Behaviour sanitizer")
       set(SANITIZER_UB_FLAG "-fsanitize=undefined")
+
       if(EXISTS "${BLACKLIST_FILE}")
         append_variable("-fsanitize-blacklist=${BLACKLIST_FILE}"
                         SANITIZER_UB_FLAG)
       endif()
+
       check_flags_available(SANITIZER_UB_AVAILABLE ${SANITIZER_UB_FLAG})
+
       if(SANITIZER_UB_AVAILABLE)
         message(DEBUG "  Append flags: ${SANITIZER_UB_FLAG}")
         append_variable("${SANITIZER_UB_FLAG}" SANITIZER_SELECTED_FLAGS)
@@ -253,6 +264,7 @@ if(USE_SANITIZER)
       message(DEBUG "Testing with Thread sanitizer")
       set(SANITIZER_THREAD_FLAG "-fsanitize=thread")
       check_flags_available(SANITIZER_THREAD_AVAILABLE ${SANITIZER_THREAD_FLAG})
+
       if(SANITIZER_THREAD_AVAILABLE)
         message(DEBUG "  Append flags: ${SANITIZER_THREAD_FLAG}")
         append_variable("${SANITIZER_THREAD_FLAG}" SANITIZER_SELECTED_FLAGS)
@@ -267,6 +279,7 @@ if(USE_SANITIZER)
       message(DEBUG "Testing with Leak sanitizer")
       set(SANITIZER_LEAK_FLAG "-fsanitize=leak")
       check_flags_available(SANITIZER_LEAK_AVAILABLE ${SANITIZER_LEAK_FLAG})
+
       if(SANITIZER_LEAK_AVAILABLE)
         message(DEBUG "  Append flags: ${SANITIZER_LEAK_FLAG}")
         append_variable("${SANITIZER_LEAK_FLAG}" SANITIZER_SELECTED_FLAGS)
@@ -281,6 +294,7 @@ if(USE_SANITIZER)
       message(DEBUG "Testing with Control Flow Integrity(CFI) sanitizer")
       set(SANITIZER_CFI_FLAG "-fsanitize=cfi")
       check_flags_available(SANITIZER_CFI_AVAILABLE ${SANITIZER_CFI_FLAG})
+
       if(SANITIZER_CFI_AVAILABLE)
         message(DEBUG "  Append: ${SANITIZER_CFI_FLAG}")
         append_variable("${SANITIZER_LEAK_FLAG}" SANITIZER_SELECTED_FLAGS)
@@ -295,6 +309,7 @@ if(USE_SANITIZER)
     message(STATUS "Build with sanitizer flags: ${SANITIZER_SELECTED_FLAGS}")
     check_flags_available(SANITIZER_SELECTED_COMPATIBLE
                           ${SANITIZER_SELECTED_FLAGS})
+
     if(SANITIZER_SELECTED_COMPATIBLE)
       message(STATUS " Append ${SANITIZER_SELECTED_FLAGS}")
       append_variable("${SANITIZER_SELECTED_FLAGS}" CMAKE_C_FLAGS
@@ -308,9 +323,14 @@ if(USE_SANITIZER)
     if(USE_SANITIZER MATCHES [[address]])
       set(MSVC_SANTIZER_FLAGS "/fsanitize=address")
       message(STATUS "Build with sanitizer flags: ${MSVC_SANTIZER_FLAGS}")
-      # https://learn.microsoft.com/en-us/answers/questions/864574/enabling-address-sanitizer-results-in-error-lnk203
-      # https://learn.microsoft.com/en-us/cpp/sanitizers/error-container-overflow?view=msvc-170
-      # add_compile_definitions(_DISABLE_VECTOR_ANNOTATION)
+
+      if(NOT USE_SANITIZER MATCHES [[enablemsvcannotations]])
+        # https://learn.microsoft.com/en-us/answers/questions/864574/enabling-address-sanitizer-results-in-error-lnk203
+        # https://learn.microsoft.com/en-us/cpp/sanitizers/error-container-overflow?view=msvc-170
+        add_compile_definitions(_DISABLE_VECTOR_ANNOTATION)
+        add_compile_definitions(_DISABLE_STRING_ANNOTATION)
+      endif()
+
       append_variable("${MSVC_SANTIZER_FLAGS}" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     else()
       # llvm tool chain has same definition which is conflicit on windows with
@@ -323,5 +343,4 @@ if(USE_SANITIZER)
   else()
     message(FATAL_ERROR "USE_SANITIZER is not supported on this platform.")
   endif()
-
 endif()
