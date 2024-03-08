@@ -17,27 +17,18 @@ jobs:
 
   pre-commit:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.head_ref }}
+          fetch-depth: 0
 
-      - name: Set up python
-        uses: actions/setup-python@v4
-
-      - name: Run pre-commit on codebase
-        uses: pre-commit/action@v3.0.0
-
-      - name: Auto commit action
-        uses: stefanzweifel/git-auto-commit-action@v4
-        if: failure()
+      - uses: actions/setup-python@v4
         with:
-          commit_message: 'ci: auto fixes from pre-commit'
+          python-version: 3.11
+
+      - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --hook-stage manual --all-files
 
   release:
     name: release
@@ -50,7 +41,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
