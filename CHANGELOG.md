@@ -1,3 +1,16 @@
+## [1.3.10](https://github.com/msclock/cmake-modules/compare/v1.3.9...v1.3.10) (2024-03-08)
+
+
+### Performance
+
+* coverage module supports gcovr and opencppcoverage ([#33](https://github.com/msclock/cmake-modules/issues/33)) ([e5bbfb5](https://github.com/msclock/cmake-modules/commit/e5bbfb5e1add0c8f602a18193dd4e95ca2e1ecaf))
+* optimize sanitizer handling msvc annotations ([#31](https://github.com/msclock/cmake-modules/issues/31)) ([a38a3ad](https://github.com/msclock/cmake-modules/commit/a38a3ad45d1d86c246da569a0a9b7a04e8236cd6))
+
+
+### CI
+
+* update actions ([#32](https://github.com/msclock/cmake-modules/issues/32)) ([581492b](https://github.com/msclock/cmake-modules/commit/581492b2f8da44395ed3873d160f4d437f0779b4))
+
 ## [1.3.9](https://github.com/msclock/cmake-modules/compare/v1.3.8...v1.3.9) (2024-03-07)
 
 
