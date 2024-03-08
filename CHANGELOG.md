@@ -1,3 +1,10 @@
+## [1.3.11](https://github.com/msclock/cmake-modules/compare/v1.3.10...v1.3.11) (2024-03-08)
+
+
+### Performance
+
+* add ALL option for sphinx_add_docs ([#39](https://github.com/msclock/cmake-modules/issues/39)) ([c67f8ac](https://github.com/msclock/cmake-modules/commit/c67f8ac7208cab1192f5933848a59784c46130ed))
+
 ## [1.3.10](https://github.com/msclock/cmake-modules/compare/v1.3.9...v1.3.10) (2024-03-08)
 
 
