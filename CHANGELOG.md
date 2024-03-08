@@ -1,3 +1,15 @@
+## [1.3.11-beta.1](https://github.com/msclock/cmake-modules/compare/v1.3.10...v1.3.11-beta.1) (2024-03-08)
+
+
+### Performance
+
+* add ALL option for sphinx_add_docs ([#34](https://github.com/msclock/cmake-modules/issues/34)) ([8c16627](https://github.com/msclock/cmake-modules/commit/8c166274457f1891459efa8f48a58add7aa14db2))
+
+
+### CI
+
+* enable pr release workflows ([#35](https://github.com/msclock/cmake-modules/issues/35)) ([f6e76cf](https://github.com/msclock/cmake-modules/commit/f6e76cfa2a94aee38b38dd6144de400c5eab5609))
+
 ## [1.3.10](https://github.com/msclock/cmake-modules/compare/v1.3.9...v1.3.10) (2024-03-08)
 
 
