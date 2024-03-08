@@ -305,7 +305,7 @@ endfunction()
 
 function(sphinx_add_docs _target)
   # Set options
-  set(_opts)
+  set(_opts ALL)
   set(_single_opts BUILDER OUTPUT_DIRECTORY SOURCE_DIRECTORY CONF_FILE
                    BREATH_DEBUG)
   set(_multi_opts BREATHE_PROJECTS)
@@ -455,9 +455,16 @@ function(sphinx_add_docs _target)
   # Replace spaces with semicolons in SPHINX_BUILD_EXECUTABLE
   string(REPLACE " " ";" _Sphinx_executable ${SPHINX_BUILD_EXECUTABLE})
 
+  # Handle the ALL option
+  unset(_all)
+  if(${arg_ALL})
+    set(_all ALL)
+  endif()
+
   # Add a custom target with the specified dependencies
   add_custom_target(
-    ${_target} ALL
+    ${_target}
+    ${_all}
     COMMAND ${CMAKE_COMMAND} -E rm -rf "${_outputdir}"
     COMMAND ${_Sphinx_executable} -b ${_builder} -c "${_cachedir}"
             "${_sourcedir}" "${_outputdir}"
