@@ -90,10 +90,6 @@ message(
     ON - Enables code coverage with auto-selected coverage tools (lcov, gcovr, llvm-cov, opencppcoverage).
     OFF - Disables code coverage.")
 
-if(NOT CODE_COVERAGE)
-  return()
-endif()
-
 # Programs to generate coverage tools
 find_program(LLVM_COV_PATH llvm-cov)
 find_program(LLVM_PROFDATA_PATH llvm-profdata)
@@ -125,9 +121,7 @@ set_property(GLOBAL PROPERTY JOB_POOLS ccov_serial_pool=1)
 
 # Common initialization and checks
 if(CODE_COVERAGE AND NOT CODE_COVERAGE_INITIALIZED)
-  set(CODE_COVERAGE_INITIALIZED
-      ON
-      CACHE INTERNAL "Code coverage initialization flag")
+  set(CODE_COVERAGE_INITIALIZED ON)
 
   # Enable ctest *Coverage, such as ctest -T
   # Continuous/Experimental/Nightly[Coverage]
@@ -137,14 +131,14 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_INITIALIZED)
         "${LLVM_COV_PATH}"
         CACHE STRING "LLVM coverage tool for gcov" FORCE)
     set(COVERAGE_EXTRA_FLAGS
-        "gcov ${COVERAGE_EXTRA_FLAGS} -s ${CMAKE_BINARY_DIR}"
+        "gcov ${USER_COVERAGE_EXTRA_FLAGS} -s ${CMAKE_BINARY_DIR}"
         CACHE STRING "Extra command line flags to pass to the coverage tool"
               FORCE)
   elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                               "GNU")
     if(GCOV_PATH)
       set(COVERAGE_EXTRA_FLAGS
-          "${COVERAGE_EXTRA_FLAGS} -s ${CMAKE_BINARY_DIR}"
+          "${USER_COVERAGE_EXTRA_FLAGS} -s ${CMAKE_BINARY_DIR}"
           CACHE STRING "Extra command line flags to pass to the coverage tool"
                 FORCE)
     endif(GCOV_PATH)
@@ -312,11 +306,11 @@ function(target_code_coverage TARGET_NAME)
     # Add code coverage instrumentation to the target's linker command
     if(CMAKE_C_COMPILER_ID MATCHES [[(Apple)?Clang]]
        OR CMAKE_CXX_COMPILER_ID MATCHES [[(Apple)?Clang]])
-      target_compile_options(${TARGET_NAME} ${TARGET_VISIBILITY} --coverage
-                             -fprofile-instr-generate -fcoverage-mapping)
-      target_link_options(
+      target_compile_options(
         ${TARGET_NAME} ${TARGET_VISIBILITY} -fprofile-instr-generate
         -fcoverage-mapping --coverage)
+      target_link_options(${TARGET_NAME} ${TARGET_VISIBILITY}
+                          -fprofile-instr-generate -fcoverage-mapping)
     elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                                 "GNU")
       target_compile_options(
@@ -347,6 +341,10 @@ function(target_code_coverage TARGET_NAME)
         endif()
 
         add_dependencies(ccov-libs ccov-run-${arg_COVERAGE_TARGET_NAME})
+      endif()
+
+      if(MSVC)
+        add_dependencies(ccov-all-processing ${TARGET_NAME})
       endif()
     endif()
 
@@ -529,20 +527,24 @@ function(target_code_coverage TARGET_NAME)
                              ccov-report-${arg_COVERAGE_TARGET_NAME})
           endif()
         endif()
+      endif(NOT MSVC)
 
-        # ALL
-        if(arg_ALL)
-          if(NOT TARGET ccov-all-processing)
-            message(
-              FATAL_ERROR
-                "Calling target_code_coverage with 'ALL' must be after a call to 'add_code_coverage_all_targets'."
-            )
-          endif()
+      # ALL
+      if(arg_ALL)
+        if(NOT TARGET ccov-all-processing)
+          message(
+            FATAL_ERROR
+              "Calling target_code_coverage with 'ALL' must be after a call to 'add_code_coverage_all_targets'."
+          )
+        endif()
 
+        if(NOT MSVC)
           add_dependencies(ccov-all-processing
                            ccov-run-${arg_COVERAGE_TARGET_NAME})
+        else()
+          add_dependencies(ccov-all-processing ${TARGET_NAME})
         endif()
-      endif(NOT MSVC)
+      endif()
     endif()
   endif()
 endfunction()
@@ -617,7 +619,7 @@ function(add_code_coverage_all_targets)
           cobertura:${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.xml
           --working_dir ${CMAKE_SOURCE_DIR} ${_include_command}
           ${_exclude_command} --cover_children -- ${CMAKE_COMMAND} --build
-          ${CMAKE_BINARY_DIR} --target ContinuousTest;
+          ${CMAKE_BINARY_DIR} --target ExperimentalTest;
         DEPENDS ccov-all-processing)
 
       # Generates HTML output of all targets for perusal
@@ -630,7 +632,7 @@ function(add_code_coverage_all_targets)
           html:${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage --working_dir
           ${CMAKE_SOURCE_DIR} ${_include_command} ${_exclude_command}
           --cover_children -- ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}
-          --target ContinuousTest;;
+          --target ExperimentalTest;
         DEPENDS ccov-all-capture)
 
       return()
@@ -646,7 +648,7 @@ function(add_code_coverage_all_targets)
       if(GCOV_PATH)
         if(CMAKE_C_COMPILER_ID MATCHES [[(Apple)?Clang]]
            OR CMAKE_CXX_COMPILER_ID MATCHES [[(Apple)?Clang]])
-          set(GCOV_OPTION "--gcov-executable=llvm-cov ${GCOV_PATH}")
+          set(GCOV_OPTION "--gcov-executable=${LLVM_COV_PATH} gcov")
         elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID
                                                     MATCHES "GNU")
           set(GCOV_OPTION "--gcov-executable=${GCOV_PATH}")
@@ -672,8 +674,9 @@ function(add_code_coverage_all_targets)
                 ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.xml
         COMMAND
           ${GCOVR_PATH} --print-summary --xml-pretty --root ${CMAKE_SOURCE_DIR}
-          --output ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.xml
-          ${GCOV_OPTION} ${_include_command} ${_exclude_command}
+          --exclude-noncode-lines --output
+          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.xml ${GCOV_OPTION}
+          ${_include_command} ${_exclude_command}
         DEPENDS ccov-all-processing)
 
       # Generates HTML output of all targets for perusal
@@ -684,7 +687,8 @@ function(add_code_coverage_all_targets)
         COMMAND ${CMAKE_COMMAND} -E make_directory
                 ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage
         COMMAND
-          ${GCOVR_PATH} --html-details --root ${CMAKE_SOURCE_DIR} --output
+          ${GCOVR_PATH} --html-details --root ${CMAKE_SOURCE_DIR}
+          --exclude-noncode-lines --output
           ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage/index.html ${GCOV_OPTION}
           ${_include_command} ${_exclude_command} --delete
         DEPENDS ccov-all-capture)
