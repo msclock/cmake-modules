@@ -1,3 +1,10 @@
+## [1.3.12](https://github.com/msclock/cmake-modules/compare/v1.3.11...v1.3.12) (2024-03-09)
+
+
+### Performance
+
+* refine coverage on windows ([#40](https://github.com/msclock/cmake-modules/issues/40)) ([6fc6d7b](https://github.com/msclock/cmake-modules/commit/6fc6d7b46f5ed9f094d391c43ad6a023a65b7ff3))
+
 ## [1.3.11](https://github.com/msclock/cmake-modules/compare/v1.3.10...v1.3.11) (2024-03-08)
 
 
