@@ -1,3 +1,10 @@
+## [1.3.13](https://github.com/msclock/cmake-modules/compare/v1.3.12...v1.3.13) (2024-03-10)
+
+
+### Performance
+
+* skip rpath for mingw and win32 platform ([#41](https://github.com/msclock/cmake-modules/issues/41)) ([d67a97a](https://github.com/msclock/cmake-modules/commit/d67a97a51a183772f2b93f9a3154cdf8de8b4b75))
+
 ## [1.3.12](https://github.com/msclock/cmake-modules/compare/v1.3.11...v1.3.12) (2024-03-09)
 
 
