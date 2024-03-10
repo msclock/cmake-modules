@@ -19,6 +19,8 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Prepare RPATH
+enable_language(C)
+enable_language(CXX)
 include(GNUInstallDirs)
 file(RELATIVE_PATH _rel ${CMAKE_INSTALL_FULL_BINDIR}
      ${CMAKE_INSTALL_FULL_LIBDIR})
@@ -26,6 +28,7 @@ message(
   DEBUG
   "${CMAKE_INSTALL_FULL_BINDIR} ralative to ${CMAKE_INSTALL_FULL_LIBDIR} path:${_rel}"
 )
+
 if(APPLE)
   set(_rpath "@loader_path/${_rel}")
 else()
@@ -35,6 +38,16 @@ endif()
 # Append runtime path
 list(APPEND CMAKE_INSTALL_RPATH ${_rpath};$ORIGIN)
 message(STATUS "CMAKE_INSTALL_RPATH:${CMAKE_INSTALL_RPATH}")
+
+# Skip RPATH for MinGW and Windows
+foreach(_id C CXX)
+  if(DEFINED CMAKE_${_id}_PLATFORM_ID
+     AND ${CMAKE_${_id}_PLATFORM_ID} MATCHES "MinGW"
+     OR WIN32)
+    set(CMAKE_SKIP_RPATH TRUE)
+  endif()
+endforeach()
+
 unset(_rpath)
 unset(_rel)
 
