@@ -1,6 +1,7 @@
 #[[
 Default to build.
 ]]
+include_guard(GLOBAL)
 
 # Create the compile command database for clang by default
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
