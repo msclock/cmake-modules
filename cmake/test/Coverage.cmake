@@ -88,6 +88,8 @@ message(
     "Activate code coverage with CODE_COVERAGE: ${CODE_COVERAGE}
   Options:
     ON - Enables code coverage with auto-selected coverage tools (lcov, gcovr, llvm-cov, opencppcoverage).
+        - opencppcoverage: preferred for msvc compilers.
+        - gcovr: preferred for non-msvc compilers.
     OFF - Disables code coverage.")
 
 # Programs to generate coverage tools
@@ -592,8 +594,8 @@ function(add_code_coverage_all_targets)
       )
     endif()
 
-    # prefer OpenCppCoverage over msvc compilers
     if(OCC_PATH AND MSVC)
+      message(STATUS "Using preferred OpenCppCoverage for msvc")
       # Nothing required for occ
       add_custom_target(ccov-all-processing COMMAND ;)
 
@@ -638,8 +640,8 @@ function(add_code_coverage_all_targets)
       return()
     endif()
 
-    # prefer gcovr over non-msvc compilers
     if(GCOVR_PATH AND NOT MSVC)
+      message(STATUS "Using preferred gcovr for non-msvc compilers")
       # Nothing required for gcovr
       add_custom_target(ccov-all-processing COMMAND ;)
 
@@ -663,8 +665,10 @@ function(add_code_coverage_all_targets)
 
       foreach(_dir ${arg_EXCLUDE_DIRS})
         cmake_path(CONVERT ${_dir} TO_NATIVE_PATH_LIST _dir)
+        # gcovr prefers excludes by relative path
+        file(RELATIVE_PATH _rel ${CMAKE_SOURCE_DIR} ${_dir})
         list(APPEND _exclude_command "--exclude")
-        list(APPEND _exclude_command "${_dir}")
+        list(APPEND _exclude_command "${_rel}")
       endforeach()
 
       # Generate the coverage report using gcovr
