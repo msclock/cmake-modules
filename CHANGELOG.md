@@ -1,3 +1,10 @@
+## [1.3.14](https://github.com/msclock/cmake-modules/compare/v1.3.13...v1.3.14) (2024-03-12)
+
+
+### Performance
+
+* coverage exclusion with relative paths using gcovr ([#42](https://github.com/msclock/cmake-modules/issues/42)) ([da03744](https://github.com/msclock/cmake-modules/commit/da0374451ff9f336c220d2fcf08a398c56daedae))
+
 ## [1.3.13](https://github.com/msclock/cmake-modules/compare/v1.3.12...v1.3.13) (2024-03-10)
 
 
