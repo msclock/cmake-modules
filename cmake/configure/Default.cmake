@@ -1,6 +1,7 @@
 #[[
 Default to configuration.
 ]]
+include_guard(GLOBAL)
 
 # Put the include dirs which are in the source or build tree before all other
 # include dirs, so the headers in the sources are preferred over the already

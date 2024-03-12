@@ -5,6 +5,12 @@ This module provides tools to handle cmake installations painlessly.
 include_guard(GLOBAL)
 include(${CMAKE_CURRENT_LIST_DIR}/Runpath.cmake)
 
+if(WIN32 AND NOT ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+  # We're building for Windows on a different operating system. Set the platform
+  # for get_runtime_dependencies() to "windows+pe"
+  set(CMAKE_GET_RUNTIME_DEPENDENCIES_PLATFORM "windows+pe")
+endif()
+
 #[[
 A function to enable installation of dependencies as part of the
  `make install` process.
