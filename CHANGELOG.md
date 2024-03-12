@@ -1,3 +1,10 @@
+## [1.3.15](https://github.com/msclock/cmake-modules/compare/v1.3.14...v1.3.15) (2024-03-12)
+
+
+### Performance
+
+* add crosscompiling settings ([#43](https://github.com/msclock/cmake-modules/issues/43)) ([43ebaa4](https://github.com/msclock/cmake-modules/commit/43ebaa4289bcda7af26be49f430f262575e1cfd3))
+
 ## [1.3.14](https://github.com/msclock/cmake-modules/compare/v1.3.13...v1.3.14) (2024-03-12)
 
 
