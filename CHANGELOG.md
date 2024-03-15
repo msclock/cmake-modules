@@ -1,3 +1,10 @@
+## [1.3.17](https://github.com/msclock/cmake-modules/compare/v1.3.16...v1.3.17) (2024-03-15)
+
+
+### Performance
+
+* more docs and options on asan ([#45](https://github.com/msclock/cmake-modules/issues/45)) ([2676a78](https://github.com/msclock/cmake-modules/commit/2676a789654c42a45fa91ceb201df2a6f7aa5217))
+
 ## [1.3.16](https://github.com/msclock/cmake-modules/compare/v1.3.15...v1.3.16) (2024-03-15)
 
 
