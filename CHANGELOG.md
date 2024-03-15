@@ -1,3 +1,10 @@
+## [1.3.16](https://github.com/msclock/cmake-modules/compare/v1.3.15...v1.3.16) (2024-03-15)
+
+
+### Performance
+
+* set relationship of coverage generation based on llvm-cov ([#44](https://github.com/msclock/cmake-modules/issues/44)) ([0acb44d](https://github.com/msclock/cmake-modules/commit/0acb44d1838ae901258160673b350578170f4569))
+
 ## [1.3.15](https://github.com/msclock/cmake-modules/compare/v1.3.14...v1.3.15) (2024-03-12)
 
 
