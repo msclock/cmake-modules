@@ -763,7 +763,7 @@ function(add_code_coverage_all_targets)
             -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
             -format="text" ${_exclude_regex} >
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
-          DEPENDS ccov-all-processing)
+          DEPENDS ccov-all-report)
       else()
         add_custom_target(
           ccov-all-export
@@ -773,7 +773,7 @@ function(add_code_coverage_all_targets)
             -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
             -format="text" ${_exclude_regex} >
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
-          DEPENDS ccov-all-processing)
+          DEPENDS ccov-all-report)
       endif()
 
       # Generate HTML output of all added targets for perusal
@@ -788,7 +788,7 @@ function(add_code_coverage_all_targets)
             -show-line-counts-or-regions
             -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage
             -format="html" ${_exclude_regex}
-          DEPENDS ccov-all-processing)
+          DEPENDS ccov-all-export)
       else()
         add_custom_target(
           ccov-all
@@ -799,7 +799,7 @@ function(add_code_coverage_all_targets)
             -show-line-counts-or-regions
             -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage
             -format="html" ${_exclude_regex}
-          DEPENDS ccov-all-processing)
+          DEPENDS ccov-all-export)
       endif()
 
     elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
