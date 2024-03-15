@@ -99,15 +99,18 @@ set(USE_SANITIZER
 message(
   STATUS
     "Activate sanitizer with USE_SANITIZER: ${USE_SANITIZER}
-  Options:
-    Address - detects most issues dealing with memory.
-    Memory - detects uninitialized reads.
-    MemoryWithOrigins - detects uninitialized reads with origins track.
-    Undefined - detects the use of various undefined behaviour
-    Thread - detects data races for multi-threaded code.
-    Leak - detects memory leaks.
-    CFI - detects potential undefined behaviours to subvert the program's control flow.
-    EnableMSVCAnnotations - enable Microsoft Visual C++ annotations.
+  Available Options:
+    USE_SANITIZER:
+      Address - detects most issues dealing with memory using -fsanitize=address(gcc/clang).
+      Memory - detects uninitialized reads using -fsanitize=memory(gcc/clang).
+      MemoryWithOrigins - detects uninitialized reads with origins track using -fsanitize-memory-track-origins(gcc/clang).
+      Undefined - detects the use of various undefined behaviour using -fsanitize=undefined(gcc/clang).
+      Thread - detects data races for multi-threaded code using -fsanitize=thread(gcc/clang).
+      Leak - detects memory leaks using -fsanitize=leak(gcc/clang).
+      CFI - detects potential undefined behaviours to subvert the program's control flow using -fsanitize=cfi(gcc/clang).
+      EnableMSVCAnnotations - enable Microsoft Visual C++ annotations.
+    USE_SANITIZER_EXTRA_FLAGS: Extra flags to pass to the sanitizer. Default to empty.
+    BLACKLIST_FILE: Path to a blacklist file for Undefined Behaviour sanitizer. Default to empty.
   Note:
     - Address,Memory can not used in combination")
 
@@ -183,146 +186,169 @@ function(copy_sanitizer_runtime target)
 endfunction()
 
 if(USE_SANITIZER)
-  unset(SANITIZER_SELECTED_FLAGS)
+  unset(asan_selected_flags)
+  set(asan_selected_flags)
 
   if(NOT MSVC AND CMAKE_HOST_UNIX)
-    append_variable("-fno-omit-frame-pointer" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
+    append_variable("-fno-omit-frame-pointer" asan_selected_flags)
 
-    if(CMAKE_BUILD_TYPE MATCHES [[DEBUG]])
+    if(CMAKE_BUILD_TYPE MATCHES [[Debug]])
       append_variable("-O1" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     endif()
 
     if(USE_SANITIZER MATCHES [[address]])
       # Optional: -fno-optimize-sibling-calls -fsanitize-address-use-after-scope
       message(DEBUG "Testing with Address sanitizer")
-      set(SANITIZER_ADDR_FLAG "-fsanitize=address")
-      check_flags_available(SANITIZER_ADDR_AVAILABLE ${SANITIZER_ADDR_FLAG})
+      set(_asan_addr_flag "-fsanitize=address")
+      check_flags_available(_asan_addr_avaiable ${_asan_addr_flag})
 
-      if(SANITIZER_ADDR_AVAILABLE)
-        message(DEBUG "  Append flags: ${SANITIZER_ADDR_FLAG}")
-        append_variable("${SANITIZER_ADDR_FLAG}" SANITIZER_SELECTED_FLAGS)
+      if(_asan_addr_avaiable)
+        message(DEBUG "  Append flags: ${_asan_addr_flag}")
+        append_variable("${_asan_addr_flag}" asan_selected_flags)
       else()
         message(
-          FATAL_ERROR
-            "Address sanitizer not available for ${CMAKE_CXX_COMPILER}")
+          WARNING
+            "Address sanitizer not available for ${CMAKE_CXX_COMPILER}, skipping"
+        )
       endif()
     endif()
 
     if(USE_SANITIZER MATCHES [[memory(withorigins)?]])
       # Optional: -fno-optimize-sibling-calls -fsanitize-memory-track-origins=2
-      set(SANITIZER_MEM_FLAG "-fsanitize=memory")
+      set(_asan_mem_flag "-fsanitize=memory")
 
       if(USE_SANITIZER MATCHES [[memorywithorigins]])
         message(DEBUG "Testing with MemoryWithOrigins sanitizer")
-        append_variable("-fsanitize-memory-track-origins" SANITIZER_MEM_FLAG)
+        append_variable("-fsanitize-memory-track-origins" _asan_mem_flag)
       else()
         message(DEBUG "Testing with Memory sanitizer")
       endif()
 
-      check_flags_available(SANITIZER_MEM_AVAILABLE ${SANITIZER_MEM_FLAG})
+      check_flags_available(_asan_mem_available ${_asan_mem_flag})
 
-      if(SANITIZER_MEM_AVAILABLE)
-        if(USE_SANITIZER MATCHES [[memorywithorigins]])
-          message(DEBUG "  Append flags: ${SANITIZER_MEM_FLAG}")
-        else()
-          message(DEBUG "  Append flags: ${SANITIZER_MEM_FLAG}")
-        endif()
-
-        append_variable("${SANITIZER_MEM_FLAG}" SANITIZER_SELECTED_FLAGS)
-
+      if(_asan_mem_available)
+        message(DEBUG "  Append flags: ${_asan_mem_flag}")
+        append_variable("${_asan_mem_flag}" asan_selected_flags)
       else()
         message(
-          FATAL_ERROR
-            "Memory [With Origins] sanitizer not available for ${CMAKE_CXX_COMPILER}"
+          WARNING
+            "Memory [With Origins] sanitizer not available for ${CMAKE_CXX_COMPILER},skipping"
         )
       endif()
     endif()
 
     if(USE_SANITIZER MATCHES [[undefined]])
       message(DEBUG "Testing with Undefined Behaviour sanitizer")
-      set(SANITIZER_UB_FLAG "-fsanitize=undefined")
+      set(_asan_ub_flag "-fsanitize=undefined")
 
       if(EXISTS "${BLACKLIST_FILE}")
-        append_variable("-fsanitize-blacklist=${BLACKLIST_FILE}"
-                        SANITIZER_UB_FLAG)
+        append_variable("-fsanitize-blacklist=${BLACKLIST_FILE}" _asan_ub_flag)
       endif()
 
-      check_flags_available(SANITIZER_UB_AVAILABLE ${SANITIZER_UB_FLAG})
+      check_flags_available(_asan_ub_avaiable ${_asan_ub_flag})
 
-      if(SANITIZER_UB_AVAILABLE)
-        message(DEBUG "  Append flags: ${SANITIZER_UB_FLAG}")
-        append_variable("${SANITIZER_UB_FLAG}" SANITIZER_SELECTED_FLAGS)
+      if(_asan_ub_avaiable)
+        message(DEBUG "  Append flags: ${_asan_ub_flag}")
+        append_variable("${_asan_ub_flag}" asan_selected_flags)
       else()
         message(
-          FATAL_ERROR
-            "Undefined Behaviour sanitizer not available for ${CMAKE_CXX_COMPILER}"
+          WARNING
+            "Undefined Behaviour sanitizer not available for ${CMAKE_CXX_COMPILER}, skipping"
         )
       endif()
     endif()
 
     if(USE_SANITIZER MATCHES [[thread]])
       message(DEBUG "Testing with Thread sanitizer")
-      set(SANITIZER_THREAD_FLAG "-fsanitize=thread")
-      check_flags_available(SANITIZER_THREAD_AVAILABLE ${SANITIZER_THREAD_FLAG})
+      set(_asan_thread_flag "-fsanitize=thread")
+      check_flags_available(_asan_thread_available ${_asan_thread_flag})
 
-      if(SANITIZER_THREAD_AVAILABLE)
-        message(DEBUG "  Append flags: ${SANITIZER_THREAD_FLAG}")
-        append_variable("${SANITIZER_THREAD_FLAG}" SANITIZER_SELECTED_FLAGS)
+      if(_asan_thread_available)
+        message(DEBUG "  Append flags: ${_asan_thread_flag}")
+        append_variable("${_asan_thread_flag}" asan_selected_flags)
       else()
         message(
-          FATAL_ERROR "Thread sanitizer not available for ${CMAKE_CXX_COMPILER}"
+          WARNING
+            "Thread sanitizer not available for ${CMAKE_CXX_COMPILER}, skipping"
         )
       endif()
     endif()
 
     if(USE_SANITIZER MATCHES [[leak]])
       message(DEBUG "Testing with Leak sanitizer")
-      set(SANITIZER_LEAK_FLAG "-fsanitize=leak")
-      check_flags_available(SANITIZER_LEAK_AVAILABLE ${SANITIZER_LEAK_FLAG})
+      set(_asan_leak_flag "-fsanitize=leak")
+      check_flags_available(_asan_leak_available ${_asan_leak_flag})
 
-      if(SANITIZER_LEAK_AVAILABLE)
-        message(DEBUG "  Append flags: ${SANITIZER_LEAK_FLAG}")
-        append_variable("${SANITIZER_LEAK_FLAG}" SANITIZER_SELECTED_FLAGS)
+      if(_asan_leak_available)
+        message(DEBUG "  Append flags: ${_asan_leak_flag}")
+        append_variable("${_asan_leak_flag}" asan_selected_flags)
       else()
         message(
-          FATAL_ERROR "Thread sanitizer not available for ${CMAKE_CXX_COMPILER}"
-        )
+          WARNING
+            "Leak sanitizer not available for ${CMAKE_CXX_COMPILER}, skipping")
       endif()
     endif()
 
     if(USE_SANITIZER MATCHES [[cfi]])
       message(DEBUG "Testing with Control Flow Integrity(CFI) sanitizer")
-      set(SANITIZER_CFI_FLAG "-fsanitize=cfi")
-      check_flags_available(SANITIZER_CFI_AVAILABLE ${SANITIZER_CFI_FLAG})
+      set(_asan_cfi_flag "-fsanitize=cfi")
+      check_flags_available(_asan_cfi_available ${_asan_cfi_flag})
 
-      if(SANITIZER_CFI_AVAILABLE)
-        message(DEBUG "  Append: ${SANITIZER_CFI_FLAG}")
-        append_variable("${SANITIZER_LEAK_FLAG}" SANITIZER_SELECTED_FLAGS)
+      if(_asan_cfi_available)
+        message(DEBUG "  Append: ${_asan_cfi_flag}")
+        append_variable("${_asan_leak_flag}" asan_selected_flags)
       else()
         message(
-          FATAL_ERROR
-            "Control Flow Integrity(CFI) sanitizer not available for ${CMAKE_CXX_COMPILER}"
+          WARNING
+            "Control Flow Integrity(CFI) sanitizer not available for ${CMAKE_CXX_COMPILER},skipping"
         )
       endif()
     endif()
 
-    message(STATUS "Build with sanitizer flags: ${SANITIZER_SELECTED_FLAGS}")
-    check_flags_available(SANITIZER_SELECTED_COMPATIBLE
-                          ${SANITIZER_SELECTED_FLAGS})
+    if(USE_SANITIZER_EXTRA_FLAGS)
 
-    if(SANITIZER_SELECTED_COMPATIBLE)
-      message(STATUS " Append ${SANITIZER_SELECTED_FLAGS}")
-      append_variable("${SANITIZER_SELECTED_FLAGS}" CMAKE_C_FLAGS
-                      CMAKE_CXX_FLAGS)
+      message(DEBUG "Test with extra flags: ${USE_SANITIZER_EXTRA_FLAGS}")
+      set(_asan_extra_flag "${USE_SANITIZER_EXTRA_FLAGS}")
+      check_flags_available(_asan_extra_avaiable ${_asan_extra_flag})
+
+      if(_asan_extra_avaiable)
+        message(DEBUG "  Append flags: ${_asan_extra_flag}")
+        append_variable("${_asan_extra_flag}" asan_selected_flags)
+      else()
+        message(
+          WARNING
+            "Extra flags ${USE_SANITIZER_EXTRA_FLAGS} not available for ${CMAKE_CXX_COMPILER}, skipping"
+        )
+      endif()
+    endif()
+
+    message(DEBUG "Test with final flags: ${asan_selected_flags}")
+    check_flags_available(_sanitizer_selected_compatible ${asan_selected_flags})
+
+    if(_sanitizer_selected_compatible)
+      message(STATUS "Build with sanitizer fianl flags: ${asan_selected_flags}")
+      append_variable("${asan_selected_flags}" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     else()
       message(
         FATAL_ERROR
-          " Sanitizer flags ${SANITIZER_SELECTED_FLAGS} are not compatible.")
+          " Sanitizer flags ${asan_selected_flags} are not compatible.")
     endif()
   elseif(MSVC)
+
     if(USE_SANITIZER MATCHES [[address]])
-      set(MSVC_SANTIZER_FLAGS "/fsanitize=address")
-      message(STATUS "Build with sanitizer flags: ${MSVC_SANTIZER_FLAGS}")
+      set(_msvc_sanitizer_flag "/fsanitize=address")
+      message(DEBUG "Testing with Address sanitizer")
+      check_flags_available(_msvc_sanitizer_available ${_msvc_sanitizer_flag})
+
+      if(_msvc_sanitizer_available)
+        message(DEBUG "  Append flags: ${_msvc_sanitizer_flag}")
+        append_variable("${_msvc_sanitizer_flag}" asan_selected_flags)
+      else()
+        message(
+          WARNING
+            "Address sanitizer not available for ${CMAKE_CXX_COMPILER} on MSVC, skipping"
+        )
+      endif()
 
       if(NOT USE_SANITIZER MATCHES [[enablemsvcannotations]])
         # https://learn.microsoft.com/en-us/answers/questions/864574/enabling-address-sanitizer-results-in-error-lnk203
@@ -331,7 +357,8 @@ if(USE_SANITIZER)
         add_compile_definitions(_DISABLE_STRING_ANNOTATION)
       endif()
 
-      append_variable("${MSVC_SANTIZER_FLAGS}" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
+      message(STATUS "Build with sanitizer fianl flags: ${asan_selected_flags}")
+      append_variable("${_msvc_sanitizer_flag}" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     else()
       # llvm tool chain has same definition which is conflicit on windows with
       # symbol _calloc_dbg.
