@@ -86,8 +86,10 @@ option(CODE_COVERAGE "Enables code coverage instrumentation and targets." ON)
 message(
   STATUS
     "Activate code coverage with CODE_COVERAGE: ${CODE_COVERAGE}
-  Options:
-    ON - Enables code coverage with auto-selected coverage tools (lcov, gcovr, llvm-cov, opencppcoverage).
+  Available Options:
+    ON - Enables code coverage with auto-selected supported tools.
+        - llvm-cov: preferred for clang compilers.
+        - lcov: preferred for gcc compilers.
         - opencppcoverage: preferred for msvc compilers.
         - gcovr: preferred for non-msvc compilers.
     OFF - Disables code coverage.")
@@ -428,9 +430,9 @@ function(target_code_coverage TARGET_NAME)
           ccov-export-${arg_COVERAGE_TARGET_NAME}
           COMMAND
             ${LLVM_COV_PATH} export $<TARGET_FILE:${TARGET_NAME}> ${_so_objects}
-            -instr-profile=${arg_COVERAGE_TARGET_NAME}.profdata -format="text"
+            -instr-profile=${arg_COVERAGE_TARGET_NAME}.profdata -format="lcov"
             ${_exclude_regex} >
-            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${arg_COVERAGE_TARGET_NAME}.json
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${arg_COVERAGE_TARGET_NAME}.info
           DEPENDS ccov-processing-${arg_COVERAGE_TARGET_NAME})
 
         # Generates HTML output of the coverage information for perusal
@@ -761,8 +763,8 @@ function(add_code_coverage_all_targets)
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list\; llvm-cov.exe
             export $$FILELIST
             -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
-            -format="text" ${_exclude_regex} >
-            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
+            -format="lcov" ${_exclude_regex} >
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.info
           DEPENDS ccov-all-report)
       else()
         add_custom_target(
@@ -771,8 +773,8 @@ function(add_code_coverage_all_targets)
             ${LLVM_COV_PATH} export `cat
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
             -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
-            -format="text" ${_exclude_regex} >
-            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
+            -format="lcov" ${_exclude_regex} >
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.info
           DEPENDS ccov-all-report)
       endif()
 
