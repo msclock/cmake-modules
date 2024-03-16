@@ -1,3 +1,10 @@
+## [1.3.18](https://github.com/msclock/cmake-modules/compare/v1.3.17...v1.3.18) (2024-03-16)
+
+
+### Performance
+
+* llvm-cov export with lcov format for codecov ([#46](https://github.com/msclock/cmake-modules/issues/46)) ([0057866](https://github.com/msclock/cmake-modules/commit/0057866de8a61ac93ce400c8a8a12f094d43a946))
+
 ## [1.3.17](https://github.com/msclock/cmake-modules/compare/v1.3.16...v1.3.17) (2024-03-15)
 
 
