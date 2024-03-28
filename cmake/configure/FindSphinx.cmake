@@ -18,6 +18,7 @@ macro(_Sphinx_find_executable _exe)
       RESULT_VARIABLE _result
       OUTPUT_VARIABLE _output
       OUTPUT_STRIP_TRAILING_WHITESPACE)
+
     if(_result EQUAL 0 AND _output MATCHES " v?([0-9]+\\.[0-9]+\\.[0-9]+)$")
       set(SPHINX_${_uc}_VERSION "${CMAKE_MATCH_1}")
     endif()
@@ -29,10 +30,12 @@ macro(_Sphinx_find_executable _exe)
         Sphinx::${_exe} PROPERTIES IMPORTED_LOCATION
                                    "${SPHINX_${_uc}_EXECUTABLE}")
     endif()
+
     set(Sphinx_${_exe}_FOUND TRUE)
   else()
     set(Sphinx_${_exe}_FOUND FALSE)
   endif()
+
   unset(_uc)
 endmacro()
 
@@ -88,6 +91,7 @@ macro(_Sphinx_find_extension _ext)
     # Use the Sphinx Python executable to import the extension module
     execute_process(COMMAND ${SPHINX_PYTHON_EXECUTABLE} -c "import ${_ext}"
                     RESULT_VARIABLE _result)
+
     # If the import is successful, set the extension as found
     if(_result EQUAL 0)
       set(Sphinx_${_ext}_FOUND TRUE)
@@ -123,18 +127,23 @@ if(SPHINX_BUILD_EXECUTABLE)
     get_filename_component(_Sphinx_directory "${SPHINX_BUILD_EXECUTABLE}"
                            DIRECTORY)
     get_filename_component(_Sphinx_directory "${_Sphinx_directory}" DIRECTORY)
+
     if(EXISTS "${_Sphinx_directory}/python.exe")
       set(SPHINX_PYTHON_EXECUTABLE "${_Sphinx_directory}/python.exe")
     endif()
+
     unset(_Sphinx_directory)
   else()
     file(READ "${SPHINX_BUILD_EXECUTABLE}" _Sphinx_script)
+
     if(_Sphinx_script MATCHES "^#!([^\n]+)")
       string(STRIP "${CMAKE_MATCH_1}" _Sphinx_shebang)
+
       if(EXISTS "${_Sphinx_shebang}")
         set(SPHINX_PYTHON_EXECUTABLE "${_Sphinx_shebang}")
       endif()
     endif()
+
     unset(_Sphinx_script)
     unset(_Sphinx_shebang)
   endif()
@@ -146,8 +155,10 @@ if(NOT SPHINX_PYTHON_EXECUTABLE)
   # installation is found, the setup is probably broken in more ways than one
   # otherwise.
   find_package(Python3 QUIET COMPONENTS Interpreter)
+
   if(TARGET Python3::Interpreter)
     set(SPHINX_PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+
     # Revert to "python -m sphinx" if shim cannot be found.
     if(NOT SPHINX_BUILD_EXECUTABLE)
       _sphinx_find_module(build sphinx)
@@ -174,8 +185,10 @@ if(SPHINX_BUILD_VERSION)
       # Do nothing, sphinx-quickstart is optional, but looked up by default.
       continue()
     endif()
+
     _sphinx_find_extension(${_Sphinx_component})
   endforeach()
+
   unset(_Sphinx_component)
 
   #
@@ -250,6 +263,7 @@ function(_sphinx_generate_conf_py _target _cachedir)
   if(DEFINED SPHINX_EXTENSIONS)
     foreach(_ext ${SPHINX_EXTENSIONS})
       set(_is_known_ext FALSE)
+
       foreach(_known_ext ${_known_exsts})
         if(_ext STREQUAL _known_ext)
           set(_opts "${opts} --ext-${_ext}")
@@ -257,6 +271,7 @@ function(_sphinx_generate_conf_py _target _cachedir)
           break()
         endif()
       endforeach()
+
       if(NOT _is_known_ext)
         if(_exts)
           set(_exts "${_exts},${_ext}")
@@ -308,7 +323,7 @@ function(sphinx_add_docs _target)
   set(_opts ALL)
   set(_single_opts BUILDER OUTPUT_DIRECTORY SOURCE_DIRECTORY CONF_FILE
                    BREATH_DEBUG)
-  set(_multi_opts BREATHE_PROJECTS)
+  set(_multi_opts BREATHE_PROJECTS EXTRA_ARGS)
   cmake_parse_arguments(PARSE_ARGV 0 "arg" "${_opts}" "${_single_opts}"
                         "${_multi_opts}")
 
@@ -327,6 +342,7 @@ function(sphinx_add_docs _target)
     else()
       set(_sourcedir "${arg_SOURCE_DIRECTORY}")
     endif()
+
     # Check if source directory exists
     if(NOT IS_DIRECTORY "${_sourcedir}")
       message(FATAL_ERROR "Sphinx source directory '${_sourcedir}' for"
@@ -336,10 +352,11 @@ function(sphinx_add_docs _target)
 
   # Set builder and output directory
   set(_builder "${arg_BUILDER}")
+
   if(arg_OUTPUT_DIRECTORY)
     set(_outputdir "${arg_OUTPUT_DIRECTORY}")
   else()
-    set(_outputdir "${CMAKE_CURRENT_BINARY_DIR}/${_target}")
+    set(_outputdir "${CMAKE_CURRENT_BINARY_DIR}/${_target}/${_builder}")
   endif()
 
   # Check if breathe projects are specified
@@ -348,6 +365,7 @@ function(sphinx_add_docs _target)
       message(FATAL_ERROR "Sphinx extension 'breathe' is not available. Needed"
                           "by sphinx_add_docs for target ${_target}")
     endif()
+
     # Add 'breathe' extension to SPHINX_EXTENSIONS
     list(APPEND SPHINX_EXTENSIONS breathe)
 
@@ -371,6 +389,7 @@ function(sphinx_add_docs _target)
         # Read the Doxyfile, verify XML generation is enabled and retrieve the
         # output directory.
         file(READ "${_doxyfile}" _contents)
+
         if(NOT _contents MATCHES "GENERATE_XML *= *YES")
           message(
             FATAL_ERROR
@@ -440,16 +459,37 @@ function(sphinx_add_docs _target)
     _sphinx_generate_conf_py(${_target} "${_cachedir}")
   endif()
 
+  file(READ "${_sourcedir}/conf.py" _conf_contents)
+
   # Append breathe_projects and breathe_default_project to conf.py if
   # _breathe_projects is set
-  if(_breathe_projects)
+  if(_breathe_projects AND NOT _conf_contents MATCHES "breathe_projects *= *{")
+    # If No breathe_projects is found, add it to the conf.py file and check
+    # breathe_default_project.
     file(
       APPEND "${_cachedir}/conf.py"
       "\n# -- breath configuration ----------------------------------------------------\n"
-      "\nbreathe_projects = { ${_breathe_projects} }"
-      "\nbreathe_default_project = '${_breathe_default_project}'")
-    file(APPEND "${_cachedir}/conf.py"
-         "\nbreathe_debug_trace_directives = ${BREATH_DEBUG}\n")
+      "\nbreathe_projects = { ${_breathe_projects} }")
+
+    if(NOT _conf_contents MATCHES "breathe_default_project *= *")
+      file(APPEND "${_cachedir}/conf.py"
+           "\nbreathe_default_project = '${_breathe_default_project}'")
+    endif()
+
+    if(NOT _conf_contents MATCHES "breathe_debug_trace_directives *= *")
+      file(APPEND "${_cachedir}/conf.py"
+           "\nbreathe_debug_trace_directives = ${BREATH_DEBUG}\n")
+    endif()
+
+    set(_conf_dir "${_cachedir}")
+  else()
+    # If breathe_projects is found, use sourcedir as _cachedir for use user's
+    # conf.py provided and warn if breathe_default_project is missing.
+    set(_conf_dir "${_sourcedir}")
+
+    if(NOT _conf_contents MATCHES "breathe_default_project *= *")
+      message(WARNING "breathe_default_project is missing in conf.py")
+    endif()
   endif()
 
   # Replace spaces with semicolons in SPHINX_BUILD_EXECUTABLE
@@ -457,6 +497,7 @@ function(sphinx_add_docs _target)
 
   # Handle the ALL option
   unset(_all)
+
   if(${arg_ALL})
     set(_all ALL)
   endif()
@@ -466,8 +507,9 @@ function(sphinx_add_docs _target)
     ${_target}
     ${_all}
     COMMAND ${CMAKE_COMMAND} -E rm -rf "${_outputdir}"
-    COMMAND ${_Sphinx_executable} -b ${_builder} -c "${_cachedir}"
-            "${_sourcedir}" "${_outputdir}"
+    COMMAND ${_Sphinx_executable} ${arg_EXTRA_ARGS} -b ${_builder} -c
+            "${_conf_dir}" "${_sourcedir}" "${_outputdir}"
     DEPENDS ${_depends})
+
   unset(_Sphinx_executable)
 endfunction()
