@@ -1,3 +1,15 @@
+## [1.3.19](https://github.com/msclock/cmake-modules/compare/v1.3.18...v1.3.19) (2024-03-28)
+
+
+### Performance
+
+* optimize sphinx_add_docs ([#48](https://github.com/msclock/cmake-modules/issues/48)) ([5bc43bd](https://github.com/msclock/cmake-modules/commit/5bc43bd3517dcca7f579eb83e14996668056860e))
+
+
+### Chores
+
+* remove annotated tag recreation ([#47](https://github.com/msclock/cmake-modules/issues/47)) ([1235e83](https://github.com/msclock/cmake-modules/commit/1235e8369be9bd1ac2987d95ebd8f7d7b52f78f7))
+
 ## [1.3.18](https://github.com/msclock/cmake-modules/compare/v1.3.17...v1.3.18) (2024-03-16)
 
 
