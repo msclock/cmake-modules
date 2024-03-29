@@ -331,8 +331,8 @@ if(USE_SANITIZER)
       append_variable("${san_selected_flags}" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     else()
       message(
-        FATAL_ERROR
-          " Sanitizer flags ${san_selected_flags} are not compatible.")
+        FATAL_ERROR " Sanitizer flags ${san_selected_flags} are not compatible."
+      )
     endif()
   elseif(MSVC)
 
