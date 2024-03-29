@@ -187,11 +187,11 @@ function(copy_sanitizer_runtime target)
 endfunction()
 
 if(USE_SANITIZER)
-  unset(asan_selected_flags)
-  set(asan_selected_flags)
+  unset(san_selected_flags)
+  set(san_selected_flags)
 
   if(NOT MSVC AND CMAKE_HOST_UNIX)
-    append_variable("-fno-omit-frame-pointer" asan_selected_flags)
+    append_variable("-fno-omit-frame-pointer" san_selected_flags)
 
     if(CMAKE_BUILD_TYPE MATCHES [[Debug]])
       append_variable("-O1" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
@@ -200,12 +200,12 @@ if(USE_SANITIZER)
     if(USE_SANITIZER MATCHES [[address]])
       # Optional: -fno-optimize-sibling-calls -fsanitize-address-use-after-scope
       message(DEBUG "Testing with Address sanitizer")
-      set(_asan_addr_flag "-fsanitize=address")
-      check_flags_available(_asan_addr_avaiable ${_asan_addr_flag})
+      set(_san_addr_flag "-fsanitize=address")
+      check_flags_available(_san_addr_avaiable ${_san_addr_flag})
 
-      if(_asan_addr_avaiable)
-        message(DEBUG "  Append flags: ${_asan_addr_flag}")
-        append_variable("${_asan_addr_flag}" asan_selected_flags)
+      if(_san_addr_avaiable)
+        message(DEBUG "  Append flags: ${_san_addr_flag}")
+        append_variable("${_san_addr_flag}" san_selected_flags)
       else()
         message(
           WARNING
@@ -216,20 +216,20 @@ if(USE_SANITIZER)
 
     if(USE_SANITIZER MATCHES [[memory(withorigins)?]])
       # Optional: -fno-optimize-sibling-calls -fsanitize-memory-track-origins=2
-      set(_asan_mem_flag "-fsanitize=memory")
+      set(_san_mem_flag "-fsanitize=memory")
 
       if(USE_SANITIZER MATCHES [[memorywithorigins]])
         message(DEBUG "Testing with MemoryWithOrigins sanitizer")
-        append_variable("-fsanitize-memory-track-origins" _asan_mem_flag)
+        append_variable("-fsanitize-memory-track-origins" _san_mem_flag)
       else()
         message(DEBUG "Testing with Memory sanitizer")
       endif()
 
-      check_flags_available(_asan_mem_available ${_asan_mem_flag})
+      check_flags_available(_san_mem_available ${_san_mem_flag})
 
-      if(_asan_mem_available)
-        message(DEBUG "  Append flags: ${_asan_mem_flag}")
-        append_variable("${_asan_mem_flag}" asan_selected_flags)
+      if(_san_mem_available)
+        message(DEBUG "  Append flags: ${_san_mem_flag}")
+        append_variable("${_san_mem_flag}" san_selected_flags)
       else()
         message(
           WARNING
@@ -240,17 +240,17 @@ if(USE_SANITIZER)
 
     if(USE_SANITIZER MATCHES [[undefined]])
       message(DEBUG "Testing with Undefined Behaviour sanitizer")
-      set(_asan_ub_flag "-fsanitize=undefined")
+      set(_san_ub_flag "-fsanitize=undefined")
 
       if(EXISTS "${BLACKLIST_FILE}")
-        append_variable("-fsanitize-blacklist=${BLACKLIST_FILE}" _asan_ub_flag)
+        append_variable("-fsanitize-blacklist=${BLACKLIST_FILE}" _san_ub_flag)
       endif()
 
-      check_flags_available(_asan_ub_avaiable ${_asan_ub_flag})
+      check_flags_available(_san_ub_avaiable ${_san_ub_flag})
 
-      if(_asan_ub_avaiable)
-        message(DEBUG "  Append flags: ${_asan_ub_flag}")
-        append_variable("${_asan_ub_flag}" asan_selected_flags)
+      if(_san_ub_avaiable)
+        message(DEBUG "  Append flags: ${_san_ub_flag}")
+        append_variable("${_san_ub_flag}" san_selected_flags)
       else()
         message(
           WARNING
@@ -261,12 +261,12 @@ if(USE_SANITIZER)
 
     if(USE_SANITIZER MATCHES [[thread]])
       message(DEBUG "Testing with Thread sanitizer")
-      set(_asan_thread_flag "-fsanitize=thread")
-      check_flags_available(_asan_thread_available ${_asan_thread_flag})
+      set(_san_thread_flag "-fsanitize=thread")
+      check_flags_available(_san_thread_available ${_san_thread_flag})
 
-      if(_asan_thread_available)
-        message(DEBUG "  Append flags: ${_asan_thread_flag}")
-        append_variable("${_asan_thread_flag}" asan_selected_flags)
+      if(_san_thread_available)
+        message(DEBUG "  Append flags: ${_san_thread_flag}")
+        append_variable("${_san_thread_flag}" san_selected_flags)
       else()
         message(
           WARNING
@@ -277,12 +277,12 @@ if(USE_SANITIZER)
 
     if(USE_SANITIZER MATCHES [[leak]])
       message(DEBUG "Testing with Leak sanitizer")
-      set(_asan_leak_flag "-fsanitize=leak")
-      check_flags_available(_asan_leak_available ${_asan_leak_flag})
+      set(_san_leak_flag "-fsanitize=leak")
+      check_flags_available(_san_leak_available ${_san_leak_flag})
 
-      if(_asan_leak_available)
-        message(DEBUG "  Append flags: ${_asan_leak_flag}")
-        append_variable("${_asan_leak_flag}" asan_selected_flags)
+      if(_san_leak_available)
+        message(DEBUG "  Append flags: ${_san_leak_flag}")
+        append_variable("${_san_leak_flag}" san_selected_flags)
       else()
         message(
           WARNING
@@ -292,12 +292,12 @@ if(USE_SANITIZER)
 
     if(USE_SANITIZER MATCHES [[cfi]])
       message(DEBUG "Testing with Control Flow Integrity(CFI) sanitizer")
-      set(_asan_cfi_flag "-fsanitize=cfi")
-      check_flags_available(_asan_cfi_available ${_asan_cfi_flag})
+      set(_san_cfi_flag "-fsanitize=cfi")
+      check_flags_available(_san_cfi_available ${_san_cfi_flag})
 
-      if(_asan_cfi_available)
-        message(DEBUG "  Append: ${_asan_cfi_flag}")
-        append_variable("${_asan_leak_flag}" asan_selected_flags)
+      if(_san_cfi_available)
+        message(DEBUG "  Append: ${_san_cfi_flag}")
+        append_variable("${_san_leak_flag}" san_selected_flags)
       else()
         message(
           WARNING
@@ -309,12 +309,12 @@ if(USE_SANITIZER)
     if(USE_SANITIZER_EXTRA_FLAGS)
 
       message(DEBUG "Test with extra flags: ${USE_SANITIZER_EXTRA_FLAGS}")
-      set(_asan_extra_flag "${USE_SANITIZER_EXTRA_FLAGS}")
-      check_flags_available(_asan_extra_avaiable ${_asan_extra_flag})
+      set(_san_extra_flag "${USE_SANITIZER_EXTRA_FLAGS}")
+      check_flags_available(_san_extra_avaiable ${_san_extra_flag})
 
-      if(_asan_extra_avaiable)
-        message(DEBUG "  Append flags: ${_asan_extra_flag}")
-        append_variable("${_asan_extra_flag}" asan_selected_flags)
+      if(_san_extra_avaiable)
+        message(DEBUG "  Append flags: ${_san_extra_flag}")
+        append_variable("${_san_extra_flag}" san_selected_flags)
       else()
         message(
           WARNING
@@ -323,16 +323,16 @@ if(USE_SANITIZER)
       endif()
     endif()
 
-    message(DEBUG "Test with final flags: ${asan_selected_flags}")
-    check_flags_available(_sanitizer_selected_compatible ${asan_selected_flags})
+    message(DEBUG "Test with final flags: ${san_selected_flags}")
+    check_flags_available(_sanitizer_selected_compatible ${san_selected_flags})
 
     if(_sanitizer_selected_compatible)
-      message(STATUS "Build with sanitizer fianl flags: ${asan_selected_flags}")
-      append_variable("${asan_selected_flags}" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
+      message(STATUS "Build with sanitizer fianl flags: ${san_selected_flags}")
+      append_variable("${san_selected_flags}" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     else()
       message(
         FATAL_ERROR
-          " Sanitizer flags ${asan_selected_flags} are not compatible.")
+          " Sanitizer flags ${san_selected_flags} are not compatible.")
     endif()
   elseif(MSVC)
 
@@ -343,7 +343,7 @@ if(USE_SANITIZER)
 
       if(_msvc_sanitizer_available)
         message(DEBUG "  Append flags: ${_msvc_sanitizer_flag}")
-        append_variable("${_msvc_sanitizer_flag}" asan_selected_flags)
+        append_variable("${_msvc_sanitizer_flag}" san_selected_flags)
       else()
         message(
           WARNING
@@ -358,7 +358,7 @@ if(USE_SANITIZER)
         add_compile_definitions(_DISABLE_STRING_ANNOTATION)
       endif()
 
-      message(STATUS "Build with sanitizer fianl flags: ${asan_selected_flags}")
+      message(STATUS "Build with sanitizer fianl flags: ${san_selected_flags}")
       append_variable("${_msvc_sanitizer_flag}" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
     else()
       # llvm tool chain has same definition which is conflicit on windows with
