@@ -297,7 +297,7 @@ if(USE_SANITIZER)
 
       if(_san_cfi_available)
         message(DEBUG "  Append: ${_san_cfi_flag}")
-        append_variable("${_san_leak_flag}" san_selected_flags)
+        append_variable("${_san_cfi_flag}" asan_selected_flags)
       else()
         message(
           WARNING
