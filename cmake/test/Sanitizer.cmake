@@ -1,7 +1,7 @@
 #[[
 Copyright (C) 2018-2022 by George Cave - gcave@stablecoder.ca
 
-Copyright (c) 2022, 2023 msclock - msclock@qq.com
+Copyright (c) 2022, 2024 msclock - msclock@qq.com
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
@@ -51,10 +51,10 @@ ThreadSanitizer
 
 ThreadSanitizer detects data races for multi-threaded code.
 
-UndefinedBehaviourSanitizer
+UndefinedSanitinzer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-UndefinedBehaviourSanitizer detects the use of various features of C/C++ that
+UndefinedSanitinzer detects the use of various features of C/C++ that
 are explicitly listed as resulting in undefined behaviour. Most notably:
     - Using misaligned or null pointer.
     - Signed integer overflow
@@ -93,12 +93,12 @@ include(CheckCXXSourceCompiles)
 include(${CMAKE_CURRENT_LIST_DIR}/../Common.cmake)
 
 set(USE_SANITIZER
-    "Address"
+    "Address,Undefined"
     CACHE STRING "Compile with sanitizer flags.")
 
 message(
   STATUS
-    "Activate sanitizer with USE_SANITIZER: ${USE_SANITIZER}
+    "Activate sanitizers with USE_SANITIZER: ${USE_SANITIZER}
   Available Options:
     USE_SANITIZER:
       Address - detects most issues dealing with memory using -fsanitize=address(gcc/clang).
@@ -112,7 +112,8 @@ message(
     USE_SANITIZER_EXTRA_FLAGS: Extra flags to pass to the sanitizer. Default to empty.
     BLACKLIST_FILE: Path to a blacklist file for Undefined Behaviour sanitizer. Default to empty.
   Note:
-    - Address,Memory can not used in combination")
+    - Thread can not work with Address and Leak sanitizers.
+    - Memory can not work with Address, Leak, and Thread sanitizers.")
 
 string(TOLOWER "${USE_SANITIZER}" USE_SANITIZER)
 
