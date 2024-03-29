@@ -1,3 +1,15 @@
+## [1.3.21](https://github.com/msclock/cmake-modules/compare/v1.3.20...v1.3.21) (2024-03-29)
+
+
+### Bug Fixes
+
+* cfi append flags ([#51](https://github.com/msclock/cmake-modules/issues/51)) ([9fd8af9](https://github.com/msclock/cmake-modules/commit/9fd8af95fb7d16516bc9a0d0ca2a3548af48215d))
+
+
+### Refactor
+
+* rename temp sanitizer flags ([#50](https://github.com/msclock/cmake-modules/issues/50)) ([53e2369](https://github.com/msclock/cmake-modules/commit/53e2369984d99446b48b3534421f519d145d15aa))
+
 ## [1.3.20](https://github.com/msclock/cmake-modules/compare/v1.3.19...v1.3.20) (2024-03-29)
 
 
