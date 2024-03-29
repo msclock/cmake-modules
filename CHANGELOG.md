@@ -1,3 +1,10 @@
+## [1.3.20](https://github.com/msclock/cmake-modules/compare/v1.3.19...v1.3.20) (2024-03-29)
+
+
+### Refactor
+
+* improve readability of sanitizers ([#49](https://github.com/msclock/cmake-modules/issues/49)) ([e9f097d](https://github.com/msclock/cmake-modules/commit/e9f097d918a921269421c27d923363949eab6201))
+
 ## [1.3.19](https://github.com/msclock/cmake-modules/compare/v1.3.18...v1.3.19) (2024-03-28)
 
 
