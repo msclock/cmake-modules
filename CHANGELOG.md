@@ -1,3 +1,10 @@
+## [1.3.22](https://github.com/msclock/cmake-modules/compare/v1.3.21...v1.3.22) (2024-03-30)
+
+
+### Performance
+
+* modernize sanitizer integration ([#52](https://github.com/msclock/cmake-modules/issues/52)) ([a055528](https://github.com/msclock/cmake-modules/commit/a055528fff3e9544af9ada8ce7c1d5bfa230faee))
+
 ## [1.3.21](https://github.com/msclock/cmake-modules/compare/v1.3.20...v1.3.21) (2024-03-29)
 
 
