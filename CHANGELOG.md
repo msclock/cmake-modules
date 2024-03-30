@@ -1,3 +1,15 @@
+## [1.3.23](https://github.com/msclock/cmake-modules/compare/v1.3.22...v1.3.23) (2024-03-30)
+
+
+### Bug Fixes
+
+* compile flags check ([#54](https://github.com/msclock/cmake-modules/issues/54)) ([263fdcb](https://github.com/msclock/cmake-modules/commit/263fdcb59bbdb714d2d3b4c0ecbf24e34a2a5663))
+
+
+### CI
+
+* disable release in pr ([#53](https://github.com/msclock/cmake-modules/issues/53)) ([9d371a4](https://github.com/msclock/cmake-modules/commit/9d371a40b19485447963a43c63ecf8ec0f204804))
+
 ## [1.3.22](https://github.com/msclock/cmake-modules/compare/v1.3.21...v1.3.22) (2024-03-30)
 
 
