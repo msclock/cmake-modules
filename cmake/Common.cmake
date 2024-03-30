@@ -72,8 +72,29 @@ Parameters:
 ]]
 function(check_flags_available return_var flags)
   # TODO support other compilers
-  include(CheckCXXCompilerFlag)
-  check_cxx_compiler_flag("${flags}" ${return_var})
+
+  # Backup the existing CMake variables for QUIET and REQUIRED FLAGS
+  set(QUIET_BACKUP ${CMAKE_REQUIRED_QUIET})
+  set(FLAGS_BACKUP ${CMAKE_REQUIRED_FLAGS})
+
+  # Set QUIET flag to suppress output during compilation check
+  set(CMAKE_REQUIRED_QUIET TRUE)
+
+  # Set the flags to be checked for availability
+  set(CMAKE_REQUIRED_FLAGS "${flags}")
+
+  # Check if a simple C++ source file compiles with the provided flags
+  check_cxx_source_compiles("int main() { return 0; }" is_available FAIL_REGEX
+                            D9002) # linker error
+
+  # Store the result of flag availability check in the specified variable
+  set(${return_var}
+      ${is_available}
+      PARENT_SCOPE)
+
+  # Restore the original REQUIRED FLAGS and QUIET settings
+  set(CMAKE_REQUIRED_FLAGS "${FLAGS_BACKUP}")
+  set(CMAKE_REQUIRED_QUIET "${QUIET_BACKUP}")
 endfunction()
 
 #[[
@@ -96,11 +117,10 @@ function(check_and_append_flag)
                         "${_multi_opts}")
 
   message(DEBUG "Checking flags ${arg_FLAGS} for ${arg_TARGETS}")
-  string(REGEX REPLACE "[ ]" "&&" san_available "${arg_FLAGS}")
-  unset(${san_available} CACHE)
-  check_flags_available(${san_available} "${arg_FLAGS}")
+  unset(is_available CACHE)
+  check_flags_available(is_available "${arg_FLAGS}")
 
-  if(${${san_available}})
+  if(${is_available})
     message(DEBUG "  Appending ${arg_FLAGS} to ${arg_TARGETS}")
 
     foreach(_target ${arg_TARGETS})
