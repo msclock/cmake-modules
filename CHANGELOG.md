@@ -1,3 +1,10 @@
+## [1.4.6](https://github.com/msclock/cmake-modules/compare/v1.4.5...v1.4.6) (2024-03-31)
+
+
+### Performance
+
+* add cppcheck to build configuration ([#61](https://github.com/msclock/cmake-modules/issues/61)) ([8970964](https://github.com/msclock/cmake-modules/commit/89709642e6be0a9ef509ae3142a65de338d570c7))
+
 ## [1.4.5](https://github.com/msclock/cmake-modules/compare/v1.4.4...v1.4.5) (2024-03-31)
 
 
