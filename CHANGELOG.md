@@ -1,3 +1,10 @@
+## [1.4.3](https://github.com/msclock/cmake-modules/compare/v1.4.2...v1.4.3) (2024-03-31)
+
+
+### Refactor
+
+* improve usage of sanitizer ([#58](https://github.com/msclock/cmake-modules/issues/58)) ([93f4061](https://github.com/msclock/cmake-modules/commit/93f4061401a5959279bd2533e51b7da86364d0bd))
+
 ## [1.4.2](https://github.com/msclock/cmake-modules/compare/v1.4.1...v1.4.2) (2024-03-31)
 
 
