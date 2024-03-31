@@ -2,7 +2,8 @@
 Configure valgrind to check memcheck on testsuit
 
 Note:
-  This requires enable the testing.
+  - Valgrind requires enable the testing to run testsuit command, e.g. `ctest -C Debug -D ExperimentalMemCheck`.
+  - Valgrind can not work with sanitizer. You should disable it before run valgrind on testsuit.
 
 Example:
 
@@ -15,14 +16,22 @@ set(USE_VALGRIND
     "--leak-check=full --gen-suppressions=all --track-origins=yes"
     CACHE STRING "use valgrind to check memory issues.")
 
+set(USE_VALGRIND_ENABLE_MEMCHECK
+    ON
+    CACHE BOOL "enable memory check with ctest command.")
+
 message(
   STATUS
-    "Activate valgrind with USE_VALGRIND: ${USE_VALGRIND}
-  Options:
-    --show-leak-kinds=all - show all possible leak
-    --gen-suppressions=all - gen suppress info automatically
-    --track-origins=yes - locates the original position
-    --suppressions=\"\${CMAKE_SOURCE_DIR}/valgrind_suppress.txt\" - use valgrind suppress config file"
+    "Use valgrind with USE_VALGRIND: ${USE_VALGRIND}
+  Valgrind Options:
+    USE_VALGRIND:
+      --show-leak-kinds=all - show all possible leak.
+      --gen-suppressions=all - gen suppress info automatically.
+      --track-origins=yes - locates the original position.
+    USE_VALGRIND_SUPPRESSION_FILE: path to valgrind suppress config file.
+    USE_VALGRIND_ENABLE_MEMCHECK: enable memory check with ctest command. Default is ON.
+  Note:
+    - Valgrind can not work with sanitizer. You should disable it before enable valgrind."
 )
 
 if(NOT CMAKE_HOST_UNIX OR NOT USE_VALGRIND)
@@ -35,10 +44,40 @@ find_program(
   NAMES valgrind
   DOC "valgrind executable")
 
-if(VALGRIND_COMMAND)
-  set(VALGRIND_COMMAND_OPTIONS
-      "${USE_VALGRIND}"
-      CACHE STRING "valgrind options" FORCE)
-else()
+if(NOT VALGRIND_COMMAND)
   message(WARNING "Not found valgrind, please check valgrind existence")
+  return()
+endif()
+
+message(STATUS "Found valgrind: ${VALGRIND_COMMAND}")
+
+if(USE_VALGRIND_SUPPRESSION_FILE)
+  set(valgrind_suppress_command
+      "--suppressions=${USE_VALGRIND_SUPPRESSION_FILE}")
+endif()
+
+set(VALGRIND_COMMAND_OPTIONS
+    "${USE_VALGRIND} ${valgrind_suppress_command}"
+    CACHE STRING "valgrind options" FORCE)
+
+message(STATUS "Valgrind final options: ${VALGRIND_COMMAND_OPTIONS}")
+
+if(USE_VALGRIND_ENABLE_MEMCHECK)
+  message(
+    VERBOSE
+    "Enable memory check with ctest command for testsuit, e.g. ctest -C Debug -D ExperimentalMemCheck"
+  )
+  set(MEMORYCHECK_COMMAND_OPTIONS
+      "${USE_VALGRIND}"
+      CACHE STRING "memory check command options" FORCE)
+
+  message(STATUS "Memory check options: ${MEMORYCHECK_COMMAND_OPTIONS}")
+
+  if(USE_VALGRIND_SUPPRESSION_FILE)
+    set(MEMORYCHECK_SUPPRESSION_FILE
+        "${USE_VALGRIND_SUPPRESSION_FILE}"
+        CACHE STRING "memory check suppressions file" FORCE)
+    message(
+      STATUS "Memory check suppressions file: ${MEMORYCHECK_SUPPRESSION_FILE}")
+  endif()
 endif()
