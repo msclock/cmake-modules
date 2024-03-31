@@ -1,3 +1,10 @@
+## [1.4.5](https://github.com/msclock/cmake-modules/compare/v1.4.4...v1.4.5) (2024-03-31)
+
+
+### Style
+
+* improve readability on valgrind ([#60](https://github.com/msclock/cmake-modules/issues/60)) ([4f7ffb9](https://github.com/msclock/cmake-modules/commit/4f7ffb9e057aa1f0258038e2ebb46907b1c26122))
+
 ## [1.4.4](https://github.com/msclock/cmake-modules/compare/v1.4.3...v1.4.4) (2024-03-31)
 
 
