@@ -1,4 +1,18 @@
 module.exports = {
+  branches: [
+    '+([0-9])?(.{+([0-9]),x}).x',
+    'master',
+    'next',
+    'next-major',
+    {
+      name: 'beta',
+      prerelease: true
+    },
+    {
+      name: 'alpha',
+      prerelease: true
+    }
+  ],
   dryRun: false,
   plugins: [
     [
@@ -47,14 +61,6 @@ module.exports = {
         parserOpts: {
           noteKeywords: ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
         },
-      },
-    ],
-    ["@semantic-release/changelog", { changelogFile: "CHANGELOG.md" }],
-    [
-      "@semantic-release/git",
-      {
-        assets: ["CHANGELOG.md"],
-        message: "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       },
     ],
     "@semantic-release/github",
