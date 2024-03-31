@@ -1,3 +1,10 @@
+## [1.4.7](https://github.com/msclock/cmake-modules/compare/v1.4.6...v1.4.7) (2024-03-31)
+
+
+### Style
+
+* improve readability on cppcheck ([#62](https://github.com/msclock/cmake-modules/issues/62)) ([82d5393](https://github.com/msclock/cmake-modules/commit/82d539320385a4d710af64e0610079a9009f2c9c))
+
 ## [1.4.6](https://github.com/msclock/cmake-modules/compare/v1.4.5...v1.4.6) (2024-03-31)
 
 
