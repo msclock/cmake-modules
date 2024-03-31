@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/msclock/cmake-modules/compare/v1.4.0...v1.4.1) (2024-03-31)
+
+
+### Performance
+
+* add regex options to compiler flags ([#56](https://github.com/msclock/cmake-modules/issues/56)) ([ece2389](https://github.com/msclock/cmake-modules/commit/ece2389c5f63cb3ea600617f1070fb8dbb0f6c1c))
+
 ## [1.4.0](https://github.com/msclock/cmake-modules/compare/v1.3.23...v1.4.0) (2024-03-31)
 
 
