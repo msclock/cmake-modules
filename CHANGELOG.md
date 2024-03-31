@@ -1,3 +1,10 @@
+## [1.4.0](https://github.com/msclock/cmake-modules/compare/v1.3.23...v1.4.0) (2024-03-31)
+
+
+### Features
+
+* add compiler flags instrumentations ([#55](https://github.com/msclock/cmake-modules/issues/55)) ([a074414](https://github.com/msclock/cmake-modules/commit/a0744146f0c366a7fac3a54ca1cb4463a04cf4b9))
+
 ## [1.3.23](https://github.com/msclock/cmake-modules/compare/v1.3.22...v1.3.23) (2024-03-30)
 
 
