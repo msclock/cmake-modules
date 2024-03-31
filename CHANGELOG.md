@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/msclock/cmake-modules/compare/v1.4.1...v1.4.2) (2024-03-31)
+
+
+### Performance
+
+* improve readability on sanitizing targets ([#57](https://github.com/msclock/cmake-modules/issues/57)) ([f8d2629](https://github.com/msclock/cmake-modules/commit/f8d2629f7fd5b2d18b889a2e9c5a94b7ad19cad6))
+
 ## [1.4.1](https://github.com/msclock/cmake-modules/compare/v1.4.0...v1.4.1) (2024-03-31)
 
 
