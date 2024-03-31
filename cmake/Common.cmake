@@ -144,6 +144,21 @@ function(check_and_append_flag)
 endfunction()
 
 #[[
+Convert a flags string to a list of flags and remove duplicates.
+
+Example:
+  flags_to_list(flags_list "-fno-omit-frame-pointer -fno-omit-frame-pointer -O2")
+  message(STATUS "Flags list: ${flags_list}")
+]]
+function(flags_to_list flags_list_return flags_string)
+  separate_arguments(flags_list UNIX_COMMAND "${flags_string}")
+  list(REMOVE_DUPLICATES flags_list)
+  set(${flags_list_return}
+      ${flags_list}
+      PARENT_SCOPE)
+endfunction()
+
+#[[
 Add compile options, link options, definitions, and link targets to a target.
 
 Example:
