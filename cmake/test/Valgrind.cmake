@@ -2,7 +2,7 @@
 Configure valgrind to check memcheck on testsuit
 
 Note:
-  - Valgrind requires enable the testing to run testsuit command, e.g. `ctest -C Debug -D ExperimentalMemCheck`.
+  - Valgrind requires enable the testing to run testsuit command, e.g. `ctest -T memcheck` or `ctest -C Debug -D ExperimentalMemCheck`.
   - Valgrind can not work with sanitizer. You should disable it before run valgrind on testsuit.
 
 Example:
@@ -29,9 +29,9 @@ message(
       --gen-suppressions=all - gen suppress info automatically.
       --track-origins=yes - locates the original position.
     USE_VALGRIND_SUPPRESSION_FILE: path to valgrind suppress config file.
-    USE_VALGRIND_ENABLE_MEMCHECK: enable memory check with ctest command. Default is ON.
+    USE_VALGRIND_ENABLE_MEMCHECK: enable memory check with ctest command, e.g. ctest -T memcheck. Default is ON.
   Note:
-    - Valgrind can not work with sanitizer. You should disable it before enable valgrind."
+    - Valgrind can not work with sanitizer. You should disable it before run valgrind on testsuit."
 )
 
 if(NOT CMAKE_HOST_UNIX OR NOT USE_VALGRIND)
