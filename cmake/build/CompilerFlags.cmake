@@ -102,7 +102,8 @@ message(
     COMPILER_WARNINGS_GNU: ${COMPILER_WARNINGS_GNU}
     COMPILER_WARNINGS_CUDA: ${COMPILER_WARNINGS_CUDA}
     COMPILER_WARNINGS_AS_ERRORS: ${COMPILER_WARNINGS_AS_ERRORS}
-    COMPILER_FLAGS_WARNINGS_AS_ERRORS: If treat warnings as errors. Default is OFF."
+    COMPILER_FLAGS_WARNINGS_AS_ERRORS: If treat warnings as errors. Default is OFF.
+    COMPILER_FLAGS_SKIP_TARGETS_REGEXES: List of regexes to skip targets. Default is empty."
 )
 
 if(MSVC)
@@ -146,9 +147,21 @@ message(STATUS "Final Compiler Warnings for CUDA: ${compiler_warnings_cuda}")
 Function to apply compiler warnings to a target.
 ]]
 function(warn_target target)
+  if(COMPILER_FLAGS_SKIP_TARGETS_REGEXES)
+    foreach(regex ${COMPILER_FLAGS_SKIP_TARGETS_REGEXES})
+      if(target MATCHES "${regex}")
+        message(
+          VERBOSE
+          "Skipping ${target} by ${CMAKE_CURRENT_FUNCTION} due to regex: ${regex}"
+        )
+        return()
+      endif()
+    endforeach()
+  endif()
+
   message(
     VERBOSE
-    "Applying compiler warnings to target: ${target}:
+    "Applying compiler warnings to target ${target} by ${CMAKE_CURRENT_FUNCTION}:
     Compiler Warnings for CXX: ${compiler_warnings_cxx}
     Compiler Warnings for C: ${compiler_warnings_c}
     Compiler Warnings for CUDA: ${compiler_warnings_cuda}")
