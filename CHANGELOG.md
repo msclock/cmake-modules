@@ -1,3 +1,10 @@
+## [1.4.4](https://github.com/msclock/cmake-modules/compare/v1.4.3...v1.4.4) (2024-03-31)
+
+
+### Performance
+
+* optimize valgrind configuration ([#59](https://github.com/msclock/cmake-modules/issues/59)) ([d726a9b](https://github.com/msclock/cmake-modules/commit/d726a9bef84e56a58de6adb1fb62793f399266e9))
+
 ## [1.4.3](https://github.com/msclock/cmake-modules/compare/v1.4.2...v1.4.3) (2024-03-31)
 
 
