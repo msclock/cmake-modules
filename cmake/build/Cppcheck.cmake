@@ -35,7 +35,7 @@ set(USE_CPPCHECK_WARNINGS_AS_ERRORS
 
 message(
   STATUS
-    "Use cppcheck with USE_CPPCHECK: ${USE_CPPCHECK}
+    "Use Cppcheck with USE_CPPCHECK: ${USE_CPPCHECK}
   Cppcheck Options:
     USE_CPPCHECK: If use cppcheck. Default is ON.
     USE_CPPCHECK_OPTIONS: cppcheck run options. Default is ${USE_CPPCHECK_OPTIONS}
@@ -73,5 +73,5 @@ if(CPPCHECK_COMMAND)
   list(REMOVE_DUPLICATES CMAKE_CXX_CPPCHECK)
   message(STATUS "Cppcheck final command: ${CMAKE_CXX_CPPCHECK}")
 else()
-  message(${WARNING_MESSAGE} "cppcheck requested but executable not found")
+  message(WARNING "Not found cppcheck, please check cppcheck existence")
 endif()
