@@ -226,7 +226,7 @@ if(USE_SANITIZER)
   endif()
 
   if(USE_SANITIZER MATCHES [[address]])
-    message(DEBUG "Testing with Address sanitizer")
+    message(VERBOSE "Testing with Address sanitizer")
 
     foreach(_flag ${USE_SANITIZER_ASAN_FLAGS})
       check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
@@ -234,7 +234,7 @@ if(USE_SANITIZER)
   endif()
 
   if(USE_SANITIZER MATCHES [[memory(withorigins)?]])
-    message(DEBUG "Testing with Memory sanitizer with origins track")
+    message(VERBOSE "Testing with Memory sanitizer with origins track")
 
     foreach(_flag ${USE_SANITIZER_MSAN_FLAGS})
       check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
@@ -242,7 +242,7 @@ if(USE_SANITIZER)
   endif()
 
   if(USE_SANITIZER MATCHES [[undefined]])
-    message(DEBUG "Testing with Undefined Behaviour sanitizer")
+    message(VERBOSE "Testing with Undefined Behaviour sanitizer")
 
     foreach(_flag ${USE_SANITIZER_USAN_FLAGS})
       check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
@@ -255,7 +255,7 @@ if(USE_SANITIZER)
   endif()
 
   if(USE_SANITIZER MATCHES [[thread]])
-    message(DEBUG "Testing with Thread sanitizer")
+    message(VERBOSE "Testing with Thread sanitizer")
 
     foreach(_flag ${USE_SANITIZER_TSAN_FLAGS})
       check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
@@ -263,7 +263,7 @@ if(USE_SANITIZER)
   endif()
 
   if(USE_SANITIZER MATCHES [[leak]])
-    message(DEBUG "Testing with Leak sanitizer")
+    message(VERBOSE "Testing with Leak sanitizer")
 
     foreach(_flag ${USE_SANITIZER_LSAN_FLAGS})
       check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
@@ -271,7 +271,7 @@ if(USE_SANITIZER)
   endif()
 
   if(USE_SANITIZER MATCHES [[cfi]])
-    message(DEBUG "Testing with Control Flow Integrity(CFI) sanitizer")
+    message(VERBOSE "Testing with Control Flow Integrity(CFI) sanitizer")
 
     foreach(_flag ${USE_SANITIZER_CFI_FLAGS})
       check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
@@ -279,7 +279,7 @@ if(USE_SANITIZER)
   endif()
 
   if(USE_SANITIZER_EXTRA_FLAGS)
-    message(DEBUG "Test with extra flags: ${USE_SANITIZER_EXTRA_FLAGS}")
+    message(VERBOSE "Test with extra flags: ${USE_SANITIZER_EXTRA_FLAGS}")
     check_and_append_flag(FLAGS "${USE_SANITIZER_EXTRA_FLAGS}" TARGETS
                           san_available_flags)
   endif()
@@ -305,8 +305,8 @@ function(sanitize_target target)
 
   if(_target_type STREQUAL "INTERFACE_LIBRARY")
     message(
-      DEBUG
-      "Skipping ${target} due to INTERFACE_LIBRARY, because it cannot be compiled directly."
+      VERBOSE
+      "Skipping target ${target} due to INTERFACE_LIBRARY by ${CMAKE_CURRENT_FUNCTION}, because it cannot be compiled directly."
     )
     return()
   endif()
@@ -314,7 +314,10 @@ function(sanitize_target target)
   if(USE_SANITIZER_SKIP_TARGETS_REGEXES)
     foreach(regex ${USE_SANITIZER_SKIP_TARGETS_REGEXES})
       if(target MATCHES "${regex}")
-        message(DEBUG "Skipping ${target} due to regex ${regex}")
+        message(
+          VERBOSE
+          "Skipping target ${target} by ${CMAKE_CURRENT_FUNCTION} due to regex ${regex}"
+        )
         return()
       endif()
     endforeach()
