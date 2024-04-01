@@ -86,7 +86,6 @@ message(
 
 if(NOT USE_HARDENING)
   message(STATUS "Hardening disabled by USE_HARDENING evaluates to false")
-  return()
 endif()
 
 message(VERBOSE "Check Hardening flags: ${USE_HARDENING_FLAGS}")
