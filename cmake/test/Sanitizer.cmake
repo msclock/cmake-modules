@@ -239,8 +239,7 @@ if(USE_SANITIZER_EXTRA_FLAGS)
                         san_available_flags)
 endif()
 
-separate_arguments(san_available_flags UNIX_COMMAND "${san_available_flags}")
-list(REMOVE_DUPLICATES san_available_flags)
+flags_to_list(san_available_flags "${san_available_flags}")
 message(STATUS "Sanitizer final flags: ${san_available_flags}")
 
 #[[
