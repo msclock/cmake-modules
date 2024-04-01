@@ -53,7 +53,6 @@ else()
       -Wl,-z,now # Mark relocation table entries resolved at load-time as
                  # read-only. It impacts startup performance
       -fsanitize=undefined # Undefined behavior sanitizer
-      -fsanitize-minimal-runtime # Minimal runtime checks
       -fno-sanitize-recover=undefined # Undefined behavior sanitizer recover
       -fno-delete-null-pointer-checks
       -fno-strict-overflow
@@ -65,7 +64,6 @@ else()
 
   set(USE_HARDENING_LINKS
       -fsanitize=undefined # Undefined behavior sanitizer
-      -fsanitize-minimal-runtime # Minimal runtime checks
       -fno-sanitize-recover=undefined # Undefined behavior sanitizer recover
       -Wl,-z,nodlopen # Restrict dlopen(3) calls to shared objects
       -Wl,-z,noexecstack # Enable data execution prevention by marking stack
@@ -140,9 +138,13 @@ function(harden_target target)
     set(LINKS ${hardening_links})
   else()
     if(_target_type STREQUAL "EXECUTABLE")
-      set(FLAGS ${hardening_flags} -fPIE -pie)
+      check_and_append_flag(FLAGS "-fPIE -pie" TARGETS exe_flags)
+      flags_to_list(exe_flags "${exe_flags}")
+      set(FLAGS ${hardening_flags} ${exe_flags})
     elseif(_target_type STREQUAL "SHARED_LIBRARY")
-      set(FLAGS ${hardening_flags} -fPIC -shared)
+      check_and_append_flag(FLAGS "-fPIC -shared" TARGETS shared_flags)
+      flags_to_list(shared_flags "${shared_flags}")
+      set(FLAGS ${hardening_flags} ${shared_flags})
     endif()
   endif()
 
