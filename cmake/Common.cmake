@@ -84,8 +84,14 @@ function(check_flags_available return_var flags)
   set(CMAKE_REQUIRED_FLAGS "${flags}")
 
   # Check if a simple C++ source file compiles with the provided flags
-  check_cxx_source_compiles("int main() { return 0; }" is_available FAIL_REGEX
-                            D9002) # linker error
+  check_cxx_source_compiles(
+    "int main() { return 0; }"
+    is_available
+    FAIL_REGEX
+    D9002
+    "unused-command-line-argument"
+    "invalid argument"
+    "unknown-warning-option") # linker error
 
   # Store the result of flag availability check in the specified variable
   set(${return_var}
