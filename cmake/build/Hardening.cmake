@@ -81,7 +81,7 @@ message(
     "Use hardening compilation with USE_HARDENING: ${USE_HARDENING}
   Hardening Options:
     USE_HARDENING_FLAGS: Default is ${USE_HARDENING_FLAGS}
-    USE_HARDENING_MSVS_LINKS: Default is ${USE_HARDENING_LINKS}
+    USE_HARDENING_LINKS: Default is ${USE_HARDENING_LINKS}
     USE_HARDENING_SKIP_TARGETS_REGEXES: List of regexes to skip targts. Default is empty."
 )
 
