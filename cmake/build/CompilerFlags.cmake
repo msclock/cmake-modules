@@ -108,7 +108,8 @@ message(
 
 if(MSVC)
   set(_warnings_cxx_temp ${COMPILER_WARNINGS_MSVC})
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
+                                               ".*Clang")
   set(_warnings_cxx_temp ${COMPILER_WARNINGS_GNU})
 else()
   message(
