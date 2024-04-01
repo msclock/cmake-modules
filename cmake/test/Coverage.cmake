@@ -96,7 +96,6 @@ message(
 
 if(NOT CODE_COVERAGE)
   message(STATUS "Code coverage disabled by CODE_COVERAGE evaluates to false.")
-  return()
 endif()
 
 # Programs to generate coverage tools
@@ -129,7 +128,7 @@ file(MAKE_DIRECTORY ${CMAKE_COVERAGE_OUTPUT_DIRECTORY})
 set_property(GLOBAL PROPERTY JOB_POOLS ccov_serial_pool=1)
 
 # Common initialization and checks
-if(NOT CODE_COVERAGE_INITIALIZED)
+if(CODE_COVERAGE AND NOT CODE_COVERAGE_INITIALIZED)
   set(CODE_COVERAGE_INITIALIZED ON)
 
   # Enable ctest *Coverage, such as ctest -T
