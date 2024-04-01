@@ -34,8 +34,13 @@ message(
     - Valgrind can not work with sanitizer. You should disable it before run valgrind on testsuit."
 )
 
-if(NOT CMAKE_HOST_UNIX OR NOT USE_VALGRIND)
+if(NOT CMAKE_HOST_UNIX)
   message(STATUS "Disable valgrind on non-unix system")
+  return()
+endif()
+
+if(NOT USE_VALGRIND)
+  message(STATUS "Disable valgrind by USE_VALGRIND evaluates to false")
   return()
 endif()
 
@@ -45,7 +50,7 @@ find_program(
   DOC "valgrind executable")
 
 if(NOT VALGRIND_COMMAND)
-  message(WARNING "Not found valgrind, please check valgrind existence")
+  message(WARNING "No valgrind found, disable valgrind to check memory issues")
   return()
 endif()
 

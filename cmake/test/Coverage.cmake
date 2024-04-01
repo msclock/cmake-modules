@@ -85,7 +85,7 @@ option(CODE_COVERAGE "Enables code coverage instrumentation and targets." ON)
 
 message(
   STATUS
-    "Activate code coverage with CODE_COVERAGE: ${CODE_COVERAGE}
+    "Use code coverage with CODE_COVERAGE: ${CODE_COVERAGE}
   Available Options:
     ON - Enables code coverage with auto-selected supported tools.
         - llvm-cov: preferred for clang compilers.
@@ -93,6 +93,11 @@ message(
         - opencppcoverage: preferred for msvc compilers.
         - gcovr: preferred for non-msvc compilers.
     OFF - Disables code coverage.")
+
+if(NOT CODE_COVERAGE)
+  message(STATUS "Code coverage disabled by CODE_COVERAGE evaluates to false.")
+  return()
+endif()
 
 # Programs to generate coverage tools
 find_program(LLVM_COV_PATH llvm-cov)
@@ -124,7 +129,7 @@ file(MAKE_DIRECTORY ${CMAKE_COVERAGE_OUTPUT_DIRECTORY})
 set_property(GLOBAL PROPERTY JOB_POOLS ccov_serial_pool=1)
 
 # Common initialization and checks
-if(CODE_COVERAGE AND NOT CODE_COVERAGE_INITIALIZED)
+if(NOT CODE_COVERAGE_INITIALIZED)
   set(CODE_COVERAGE_INITIALIZED ON)
 
   # Enable ctest *Coverage, such as ctest -T

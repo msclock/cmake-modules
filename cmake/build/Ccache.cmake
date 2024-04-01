@@ -18,7 +18,7 @@ message(STATUS "Use Ccache with USE_CCACHE: ${USE_CCACHE}
     USE_CCACHE: If use ccache to speed up compiling. Default is ON.")
 
 if(NOT USE_CCACHE)
-  message(STATUS "Disable ccache because of USE_CCACHE is OFF")
+  message(STATUS "Disable ccache by USE_CCACHE evaluates to false.")
   return()
 endif()
 
@@ -28,7 +28,7 @@ find_program(
   DOC "ccache executable")
 
 if(NOT CCACHE_COMMAND)
-  message(WARNING "Disable ccache because of no ccache installed")
+  message(WARNING "No ccache found, disable ccache optimization.")
   return()
 endif()
 

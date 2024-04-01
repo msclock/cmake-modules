@@ -44,6 +44,7 @@ message(
 )
 
 if(NOT USE_CPPCHECK)
+  message(STATUS "Disable cppcheck by USE_CPPCHECK evaluates to false.")
   return()
 endif()
 
@@ -52,26 +53,28 @@ find_program(
   NAMES cppcheck
   DOC "Path to cppcheck executable")
 
-if(CPPCHECK_COMMAND)
-  if(CMAKE_GENERATOR MATCHES ".*Visual Studio.*")
-    set(CPPCHECK_TEMPLATE "vs")
-  else()
-    set(CPPCHECK_TEMPLATE "gcc")
-  endif()
-
-  set(CMAKE_CXX_CPPCHECK
-      ${CPPCHECK_COMMAND} --template=${CPPCHECK_TEMPLATE}
-      ${USE_CPPCHECK_OPTIONS} --suppress=${USE_CPPCHECK_SUPPRESS_DIR})
-
-  if(NOT "${CMAKE_CXX_STANDARD}" STREQUAL "")
-    list(APPEND CMAKE_CXX_CPPCHECK --std=c++${CMAKE_CXX_STANDARD})
-  endif()
-
-  if(USE_CPPCHECK_WARNINGS_AS_ERRORS)
-    list(APPEND CMAKE_CXX_CPPCHECK --error-exitcode=2)
-  endif()
-  list(REMOVE_DUPLICATES CMAKE_CXX_CPPCHECK)
-  message(STATUS "Cppcheck final command: ${CMAKE_CXX_CPPCHECK}")
-else()
-  message(WARNING "Not found cppcheck, please check cppcheck existence")
+if(NOT CPPCHECK_COMMAND)
+  message(WARNING "No cppcheck found, disable cppcheck static analysis.")
+  return()
 endif()
+
+# Set cppcheck template based on the generator used
+if(CMAKE_GENERATOR MATCHES ".*Visual Studio.*")
+  set(CPPCHECK_TEMPLATE "vs")
+else()
+  set(CPPCHECK_TEMPLATE "gcc")
+endif()
+
+set(CMAKE_CXX_CPPCHECK
+    ${CPPCHECK_COMMAND} --template=${CPPCHECK_TEMPLATE} ${USE_CPPCHECK_OPTIONS}
+    --suppress=${USE_CPPCHECK_SUPPRESS_DIR})
+
+if(NOT "${CMAKE_CXX_STANDARD}" STREQUAL "")
+  list(APPEND CMAKE_CXX_CPPCHECK --std=c++${CMAKE_CXX_STANDARD})
+endif()
+
+if(USE_CPPCHECK_WARNINGS_AS_ERRORS)
+  list(APPEND CMAKE_CXX_CPPCHECK --error-exitcode=2)
+endif()
+list(REMOVE_DUPLICATES CMAKE_CXX_CPPCHECK)
+message(STATUS "Cppcheck final command: ${CMAKE_CXX_CPPCHECK}")

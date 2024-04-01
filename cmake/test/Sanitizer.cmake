@@ -150,6 +150,99 @@ message(
 
 string(TOLOWER "${USE_SANITIZER}" USE_SANITIZER)
 
+if(NOT USE_SANITIZER)
+  message(STATUS "Sanitizer disabled by USE_SANITIZER evaluates to false.")
+  return()
+endif()
+
+if(USE_SANITIZER MATCHES [[thread]] AND (USE_SANITIZER MATCHES [[address]]
+                                         OR USE_SANITIZER MATCHES [[leak]]))
+  message(
+    FATAL_ERROR "Thread sanitizer can not work with Address or Leak sanitizers."
+  )
+endif()
+
+if(USE_SANITIZER MATCHES [[memory(withorigins)?]]
+   AND (USE_SANITIZER MATCHES [[address]]
+        OR USE_SANITIZER MATCHES [[leak]]
+        OR USE_SANITIZER MATCHES [[thread]]))
+  message(
+    FATAL_ERROR
+      "Memory sanitizer with origins track can not work with Address, Leak, and Thread sanitizers."
+  )
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
+                                           ".*Clang")
+  if(CMAKE_BUILD_TYPE MATCHES [[Debug]])
+    # Pending to verify if this is still necessary.
+    append_variable("-O1" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
+  endif()
+endif()
+
+if(USE_SANITIZER MATCHES [[address]])
+  message(VERBOSE "Testing with Address sanitizer")
+
+  foreach(_flag ${USE_SANITIZER_ASAN_FLAGS})
+    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
+  endforeach()
+endif()
+
+if(USE_SANITIZER MATCHES [[memory(withorigins)?]])
+  message(VERBOSE "Testing with Memory sanitizer with origins track")
+
+  foreach(_flag ${USE_SANITIZER_MSAN_FLAGS})
+    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
+  endforeach()
+endif()
+
+if(USE_SANITIZER MATCHES [[undefined]])
+  message(VERBOSE "Testing with Undefined Behaviour sanitizer")
+
+  foreach(_flag ${USE_SANITIZER_USAN_FLAGS})
+    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
+  endforeach()
+
+  if(EXISTS "${USE_SANITIZER_BLACKLIST_FILE}")
+    append_variable("-fsanitize-blacklist=${USE_SANITIZER_BLACKLIST_FILE}"
+                    san_available_flags)
+  endif()
+endif()
+
+if(USE_SANITIZER MATCHES [[thread]])
+  message(VERBOSE "Testing with Thread sanitizer")
+
+  foreach(_flag ${USE_SANITIZER_TSAN_FLAGS})
+    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
+  endforeach()
+endif()
+
+if(USE_SANITIZER MATCHES [[leak]])
+  message(VERBOSE "Testing with Leak sanitizer")
+
+  foreach(_flag ${USE_SANITIZER_LSAN_FLAGS})
+    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
+  endforeach()
+endif()
+
+if(USE_SANITIZER MATCHES [[cfi]])
+  message(VERBOSE "Testing with Control Flow Integrity(CFI) sanitizer")
+
+  foreach(_flag ${USE_SANITIZER_CFI_FLAGS})
+    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
+  endforeach()
+endif()
+
+if(USE_SANITIZER_EXTRA_FLAGS)
+  message(VERBOSE "Test with extra flags: ${USE_SANITIZER_EXTRA_FLAGS}")
+  check_and_append_flag(FLAGS "${USE_SANITIZER_EXTRA_FLAGS}" TARGETS
+                        san_available_flags)
+endif()
+
+separate_arguments(san_available_flags UNIX_COMMAND "${san_available_flags}")
+list(REMOVE_DUPLICATES san_available_flags)
+message(STATUS "Sanitizer final flags: ${san_available_flags}")
+
 #[[
 A function to copy sanitizer runtime when open ASAN flags on windows.Basically,
 it copy clang_rt.asan*.dll to target location.
@@ -205,96 +298,6 @@ function(copy_sanitizer_runtime target)
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LLVM_SYMBOLIZER_SOURCE}
             $<TARGET_FILE_DIR:${target}>)
 endfunction()
-
-if(USE_SANITIZER)
-  if(USE_SANITIZER MATCHES [[thread]] AND (USE_SANITIZER MATCHES [[address]]
-                                           OR USE_SANITIZER MATCHES [[leak]]))
-    message(
-      FATAL_ERROR
-        "Thread sanitizer can not work with Address or Leak sanitizers.")
-  endif()
-
-  if(USE_SANITIZER MATCHES [[memory(withorigins)?]]
-     AND (USE_SANITIZER MATCHES [[address]]
-          OR USE_SANITIZER MATCHES [[leak]]
-          OR USE_SANITIZER MATCHES [[thread]]))
-    message(
-      FATAL_ERROR
-        "Memory sanitizer with origins track can not work with Address, Leak, and Thread sanitizers."
-    )
-  endif()
-
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
-                                             ".*Clang")
-    if(CMAKE_BUILD_TYPE MATCHES [[Debug]])
-      # Pending to verify if this is still necessary.
-      append_variable("-O1" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
-    endif()
-  endif()
-
-  if(USE_SANITIZER MATCHES [[address]])
-    message(VERBOSE "Testing with Address sanitizer")
-
-    foreach(_flag ${USE_SANITIZER_ASAN_FLAGS})
-      check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-    endforeach()
-  endif()
-
-  if(USE_SANITIZER MATCHES [[memory(withorigins)?]])
-    message(VERBOSE "Testing with Memory sanitizer with origins track")
-
-    foreach(_flag ${USE_SANITIZER_MSAN_FLAGS})
-      check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-    endforeach()
-  endif()
-
-  if(USE_SANITIZER MATCHES [[undefined]])
-    message(VERBOSE "Testing with Undefined Behaviour sanitizer")
-
-    foreach(_flag ${USE_SANITIZER_USAN_FLAGS})
-      check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-    endforeach()
-
-    if(EXISTS "${USE_SANITIZER_BLACKLIST_FILE}")
-      append_variable("-fsanitize-blacklist=${USE_SANITIZER_BLACKLIST_FILE}"
-                      san_available_flags)
-    endif()
-  endif()
-
-  if(USE_SANITIZER MATCHES [[thread]])
-    message(VERBOSE "Testing with Thread sanitizer")
-
-    foreach(_flag ${USE_SANITIZER_TSAN_FLAGS})
-      check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-    endforeach()
-  endif()
-
-  if(USE_SANITIZER MATCHES [[leak]])
-    message(VERBOSE "Testing with Leak sanitizer")
-
-    foreach(_flag ${USE_SANITIZER_LSAN_FLAGS})
-      check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-    endforeach()
-  endif()
-
-  if(USE_SANITIZER MATCHES [[cfi]])
-    message(VERBOSE "Testing with Control Flow Integrity(CFI) sanitizer")
-
-    foreach(_flag ${USE_SANITIZER_CFI_FLAGS})
-      check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-    endforeach()
-  endif()
-
-  if(USE_SANITIZER_EXTRA_FLAGS)
-    message(VERBOSE "Test with extra flags: ${USE_SANITIZER_EXTRA_FLAGS}")
-    check_and_append_flag(FLAGS "${USE_SANITIZER_EXTRA_FLAGS}" TARGETS
-                          san_available_flags)
-  endif()
-
-  separate_arguments(san_available_flags UNIX_COMMAND "${san_available_flags}")
-  list(REMOVE_DUPLICATES san_available_flags)
-  message(STATUS "Sanitizer final flags: ${san_available_flags}")
-endif()
 
 #[[
 Sanitize a target.
