@@ -63,6 +63,7 @@ else()
   )
 
   set(USE_HARDENING_LINKS
+      -fstack-protector-strong # Enable stack protector
       -fsanitize=undefined # Undefined behavior sanitizer
       -fno-sanitize-recover=undefined # Undefined behavior sanitizer recover
       -Wl,-z,nodlopen # Restrict dlopen(3) calls to shared objects
@@ -140,10 +141,12 @@ function(harden_target target)
       check_and_append_flag(FLAGS "-fPIE -pie" TARGETS exe_flags)
       flags_to_list(exe_flags "${exe_flags}")
       set(FLAGS ${hardening_flags} ${exe_flags})
+      set(LINKS ${hardening_links} ${exe_flags})
     elseif(_target_type STREQUAL "SHARED_LIBRARY")
       check_and_append_flag(FLAGS "-fPIC -shared" TARGETS shared_flags)
       flags_to_list(shared_flags "${shared_flags}")
       set(FLAGS ${hardening_flags} ${shared_flags})
+      set(LINKS ${hardening_links} ${shared_flags})
     endif()
   endif()
 
