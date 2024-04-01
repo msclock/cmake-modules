@@ -152,7 +152,6 @@ string(TOLOWER "${USE_SANITIZER}" USE_SANITIZER)
 
 if(NOT USE_SANITIZER)
   message(STATUS "Sanitizer disabled by USE_SANITIZER evaluates to false.")
-  return()
 endif()
 
 if(USE_SANITIZER MATCHES [[thread]] AND (USE_SANITIZER MATCHES [[address]]
