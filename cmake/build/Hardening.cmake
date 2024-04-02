@@ -132,23 +132,19 @@ function(harden_target target)
 
   get_target_property(_target_type ${target} TYPE)
 
-  if(MSVC OR (NOT _target_type STREQUAL "EXECUTABLE"
-              AND NOT _target_type STREQUAL "SHARED_LIBRARY"))
-    set(FLAGS ${hardening_flags})
-    set(LINKS ${hardening_links})
-  else()
+  if(NOT MSVC AND (_target_type STREQUAL "EXECUTABLE" OR _target_type STREQUAL
+                                                         "SHARED_LIBRARY"))
     if(_target_type STREQUAL "EXECUTABLE")
-      check_and_append_flag(FLAGS "-fPIE -pie" TARGETS exe_flags)
-      flags_to_list(exe_flags "${exe_flags}")
-      set(FLAGS ${hardening_flags} ${exe_flags})
-      set(LINKS ${hardening_links} ${exe_flags})
+      check_and_append_flag(FLAGS "-fPIE -pie" TARGETS target_flags)
+      flags_to_list(target_flags "${target_flags}")
     elseif(_target_type STREQUAL "SHARED_LIBRARY")
-      check_and_append_flag(FLAGS "-fPIC -shared" TARGETS shared_flags)
-      flags_to_list(shared_flags "${shared_flags}")
-      set(FLAGS ${hardening_flags} ${shared_flags})
-      set(LINKS ${hardening_links} ${shared_flags})
+      check_and_append_flag(FLAGS "-fPIC -shared" TARGETS target_flags)
+      flags_to_list(target_flags "${target_flags}")
     endif()
   endif()
+
+  set(FLAGS ${hardening_flags} ${target_flags})
+  set(LINKS ${hardening_links} ${target_flags})
 
   message(VERBOSE "Hardening target ${target} by ${CMAKE_CURRENT_FUNCTION}:
     Hardening compiling flags: ${FLAGS}
