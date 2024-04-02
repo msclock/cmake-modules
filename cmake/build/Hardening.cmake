@@ -16,6 +16,7 @@ Example:
 include_guard(GLOBAL)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../Common.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/Sanitizer.cmake)
 
 set(USE_HARDENING
     ON
@@ -122,6 +123,16 @@ if(hardening_flags MATCHES "-fsanitize=undefined;-fsanitize-minimal-runtime")
 endif()
 
 flags_to_list(hardening_links "${hardening_links}")
+
+# Handle the conflics between hardening ubsan and asan
+if(san_available_flags MATCHES "-fsanitize=address")
+  message(
+    WARNING "Try to disable usan minimal runtime due to conflict with asan")
+  list(REMOVE_ITEM hardening_flags "-fsanitize=undefined"
+       "-fsanitize-minimal-runtime" "-fno-sanitize-recover=undefined")
+  list(REMOVE_ITEM hardening_links "-fsanitize=undefined"
+       "-fsanitize-minimal-runtime" "-fno-sanitize-recover=undefined")
+endif()
 
 message(STATUS "Final Hardening flags: ${hardening_flags}")
 message(STATUS "Final Hardening links: ${hardening_links}")
