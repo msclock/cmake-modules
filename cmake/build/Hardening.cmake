@@ -125,15 +125,20 @@ endif()
 flags_to_list(hardening_links "${hardening_links}")
 
 # Handle the conflics between hardening ubsan and asan
-if(san_available_flags
-   AND san_available_flags MATCHES "-fsanitize=address"
-   AND hardening_flags MATCHES "-fsanitize-minimal-runtime")
-  message(
-    WARNING "Try to disable usan minimal runtime due to conflict with asan")
-  list(REMOVE_ITEM hardening_flags "-fsanitize=undefined"
-       "-fsanitize-minimal-runtime" "-fno-sanitize-recover=undefined")
-  list(REMOVE_ITEM hardening_links "-fsanitize=undefined"
-       "-fsanitize-minimal-runtime" "-fno-sanitize-recover=undefined")
+
+if(TARGET sanitizer_flags)
+  get_target_property(_san sanitizer_flags _san)
+
+  if(_san
+     AND _san MATCHES "-fsanitize=address"
+     AND hardening_flags MATCHES "-fsanitize-minimal-runtime")
+    message(
+      WARNING "Try to disable usan minimal runtime due to conflict with asan")
+    list(REMOVE_ITEM hardening_flags "-fsanitize=undefined"
+         "-fsanitize-minimal-runtime" "-fno-sanitize-recover=undefined")
+    list(REMOVE_ITEM hardening_links "-fsanitize=undefined"
+         "-fsanitize-minimal-runtime" "-fno-sanitize-recover=undefined")
+  endif()
 endif()
 
 message(STATUS "Hardening final flags: ${hardening_flags}")
