@@ -132,15 +132,13 @@ message(
   STATUS
     "Use sanitizer with USE_SANITIZER: ${USE_SANITIZER}
   Sanitizer Options:
-    USE_SANITIZER:
-      OFF - disable sanitizer.
-      Address - detects most issues dealing with memory, checking with ${USE_SANITIZER_ASAN_FLAGS}.
-      Memory - detects uninitialized reads, checking with ${USE_SANITIZER_MSAN_FLAGS}.
-      Undefined - detects the use of various undefined behaviours, checking with ${USE_SANITIZER_USAN_FLAGS}.
-      Thread - detects data races for multi-threaded code, checking with ${USE_SANITIZER_TSAN_FLAGS}.
-      Leak - detects memory leaks, checking with ${USE_SANITIZER_LSAN_FLAGS}.
-      CFI - detects potential undefined behaviours to subvert the program's control flow, checking with ${USE_SANITIZER_CFI_FLAGS}.
-      EnableMSVCAnnotations - enable Microsoft Visual C++ annotations.
+    USE_SANITIZER: OFF, Address, Memory, Undefined, Thread, Leak, CFI, EnableMSVCAnnotations
+    USE_SANITIZER_ASAN_FLAGS: ${USE_SANITIZER_ASAN_FLAGS}
+    USE_SANITIZER_MSAN_FLAGS: ${USE_SANITIZER_MSAN_FLAGS}
+    USE_SANITIZER_USAN_FLAGS: ${USE_SANITIZER_USAN_FLAGS}
+    USE_SANITIZER_TSAN_FLAGS: ${USE_SANITIZER_TSAN_FLAGS}
+    USE_SANITIZER_LSAN_FLAGS: ${USE_SANITIZER_LSAN_FLAGS}
+    USE_SANITIZER_CFI_FLAGS: ${USE_SANITIZER_CFI_FLAGS}
     USE_SANITIZER_EXTRA_FLAGS: Extra flags to pass to the sanitizer. Default to empty.
     USE_SANITIZER_BLACKLIST_FILE: Path to a blacklist file for Undefined sanitizer. Default to empty.
     USE_SANITIZER_SKIP_TARGETS_REGEXES: Regexes to skip targets to sanitize. Default to enable all targets instrumented.
@@ -241,6 +239,10 @@ endif()
 flags_to_list(san_available_flags "${san_available_flags}")
 message(STATUS "Sanitizer final flags: ${san_available_flags}")
 
+add_custom_target(sanitizer_flags)
+set_target_properties(sanitizer_flags PROPERTIES _san "${san_available_flags}")
+unset(san_available_flags)
+
 #[[
 A function to copy sanitizer runtime when open ASAN flags on windows.Basically,
 it copy clang_rt.asan*.dll to target location.
@@ -331,10 +333,12 @@ function(sanitize_target target)
     endforeach()
   endif()
 
+  get_target_property(_san sanitizer_flags _san)
+
   if(NOT MSVC)
-    set(FLAGS FLAGS ${san_available_flags})
+    set(FLAGS FLAGS ${_san})
     foreach(sanitizer address memory undefined thread leak cfi)
-      if("-fsanitize=${sanitizer}" IN_LIST san_available_flags)
+      if("-fsanitize=${sanitizer}" IN_LIST _san)
         list(APPEND _links "-fsanitize=${sanitizer}")
       endif()
     endforeach()
@@ -351,7 +355,7 @@ function(sanitize_target target)
                       _DISABLE_STRING_ANNOTATION)
     endif()
 
-    set(FLAGS FLAGS ${san_available_flags} /Zi /INCREMENTAL:NO)
+    set(FLAGS FLAGS ${_san} /Zi /INCREMENTAL:NO)
     set(LINKS LINKS /INCREMENTAL:NO)
   endif()
 
