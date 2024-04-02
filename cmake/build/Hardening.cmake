@@ -6,6 +6,7 @@ References:
 - <https://best.openssf.org/Compiler-Hardening-Guides/Compiler-Options-Hardening-Guide-for-C-and-C++.html>
 - <https://github.com/ossf/wg-best-practices-os-developers
 - <https://learn.microsoft.com/en-us/archive/msdn-magazine/2008/march/security-briefs-protecting-your-code-with-visual-c-defenses
+- <https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#minimal-runtime>
 
 Example:
 
@@ -52,8 +53,9 @@ else()
                    # read-only
       -Wl,-z,now # Mark relocation table entries resolved at load-time as
                  # read-only. It impacts startup performance
-      -fsanitize=undefined # Undefined behavior sanitizer
-      -fno-sanitize-recover=undefined # Undefined behavior sanitizer recover
+      "-fsanitize=undefined -fsanitize-minimal-runtime" # Enable minimal runtime
+                                                        # undefined behavior
+                                                        # sanitizer
       -fno-delete-null-pointer-checks
       -fno-strict-overflow
       -fno-strict-aliasing
@@ -64,8 +66,9 @@ else()
 
   set(USE_HARDENING_LINKS
       -fstack-protector-strong # Enable stack protector
-      -fsanitize=undefined # Undefined behavior sanitizer
-      -fno-sanitize-recover=undefined # Undefined behavior sanitizer recover
+      "-fsanitize=undefined -fsanitize-minimal-runtime" # Enable minimal runtime
+                                                        # undefined behavior
+                                                        # sanitizer
       -Wl,-z,nodlopen # Restrict dlopen(3) calls to shared objects
       -Wl,-z,noexecstack # Enable data execution prevention by marking stack
                          # memory as non-executable
@@ -100,12 +103,26 @@ flags_to_list(hardening_flags "${hardening_flags}")
 message(VERBOSE "Check Hardening links: ${USE_HARDENING_LINKS}")
 
 foreach(_harden ${USE_HARDENING_LINKS})
-  if(${_harden} IN_LIST hardening_flags)
+  flags_to_list(_harden_list "${_harden}")
+  if(hardening_flags MATCHES "${_harden_list}")
     list(APPEND hardening_links ${_harden})
   endif()
 endforeach()
 
+# Enable minimal runtime undefined but not not propagete globally, see
+# https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#minimal-runtime
+if(hardening_flags MATCHES "-fsanitize=undefined;-fsanitize-minimal-runtime")
+  message(VERBOSE
+          "Try to enabling minimal runtime undefined behavior sanitizer")
+  check_and_append_flag(FLAGS "-fno-sanitize-recover=undefined" TARGETS
+                        no_sanitize_recover_ub)
+  flags_to_list(no_sanitize_recover_ub "${no_sanitize_recover_ub}")
+  list(APPEND hardening_flags ${no_sanitize_recover_ub})
+  list(APPEND hardening_links ${no_sanitize_recover_ub})
+endif()
+
 flags_to_list(hardening_links "${hardening_links}")
+
 message(STATUS "Final Hardening flags: ${hardening_flags}")
 message(STATUS "Final Hardening links: ${hardening_links}")
 
