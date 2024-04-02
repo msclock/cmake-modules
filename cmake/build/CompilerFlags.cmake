@@ -8,7 +8,7 @@ include_guard(GLOBAL)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../Common.cmake)
 
-set(COMPILER_WARNINGS_MSVC
+set(COMPILER_FLAGS_WARNINGS_CXX
     /W4 # Baseline reasonable warnings
     /w14242 # 'identifier': conversion from 'type1' to 'type2', possible loss of
             # data
@@ -40,10 +40,6 @@ set(COMPILER_WARNINGS_MSVC
     /w14928 # illegal copy-initialization; more than one user-defined conversion
             # has been implicitly applied
     /permissive- # standards conformance mode for MSVC compiler.
-)
-
-set(COMPILER_WARNINGS_GNU
-    # GNU
     -Wall # all warnings on
     -Wextra # reasonable and standard
     -Wshadow # warn the user if a variable declaration shadows one from a parent
@@ -77,7 +73,7 @@ set(COMPILER_WARNINGS_GNU
                        # 'override' or 'final'
 )
 
-set(COMPILER_WARNINGS_CUDA
+set(COMPILER_FLAGS_WARNINGS_CUDA
     -Wall # Wall all warnings
     -Wextra # Reasonable and standard extra warnings
     -Wunused # Warn on anything being unused
@@ -86,63 +82,52 @@ set(COMPILER_WARNINGS_CUDA
              # context
 )
 
-set(COMPILER_WARNINGS_AS_ERRORS
-    # MSVC
-    /WX "Enable warnings as errors in MSVC"
-    # GNU
-    -Werror "Enable warnings as errors in GNU")
-
 option(COMPILER_FLAGS_WARNINGS_AS_ERRORS "Treat Warnings As Errors" OFF)
 
 message(
   STATUS
     "Use Compiler flags:
   Compiler Flags Options:
-    COMPILER_WARNINGS_MSVC: ${COMPILER_WARNINGS_MSVC}
-    COMPILER_WARNINGS_GNU: ${COMPILER_WARNINGS_GNU}
-    COMPILER_WARNINGS_CUDA: ${COMPILER_WARNINGS_CUDA}
-    COMPILER_WARNINGS_AS_ERRORS: ${COMPILER_WARNINGS_AS_ERRORS}
+    COMPILER_FLAGS_WARNINGS_CXX: ${COMPILER_FLAGS_WARNINGS_CXX}
+    COMPILER_FLAGS_WARNINGS_CUDA: ${COMPILER_FLAGS_WARNINGS_CUDA}
     COMPILER_FLAGS_WARNINGS_AS_ERRORS: If treat warnings as errors. Default is OFF.
     COMPILER_FLAGS_SKIP_TARGETS_REGEXES: List of regexes to skip targets. Default is empty."
 )
 
-if(MSVC)
-  set(_warnings_cxx_temp ${COMPILER_WARNINGS_MSVC})
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
-                                               ".*Clang")
-  set(_warnings_cxx_temp ${COMPILER_WARNINGS_GNU})
-else()
-  message(
-    AUTHOR_WARNING
-      "No compiler warnings set for CXX compiler: '${CMAKE_CXX_COMPILER_ID}'")
-endif()
-
-message(VERBOSE "Check Compiler Warnings CXX: ${_warnings_cxx_temp}")
-
-foreach(_warn ${_warnings_cxx_temp})
+foreach(_warn ${COMPILER_FLAGS_WARNINGS_CXX})
   check_and_append_flag(FLAGS "${_warn}" TARGETS compiler_warnings_cxx)
 endforeach()
 
 if(COMPILER_FLAGS_WARNINGS_AS_ERRORS)
-  check_and_append_flag(FLAGS "${COMPILER_WARNINGS_AS_ERRORS}" TARGETS
-                        compiler_warnings_cxx)
+  foreach(_warn /WX -Werror)
+    check_and_append_flag(FLAGS "${_warn}" TARGETS compiler_warnings_cxx)
+  endforeach()
 endif()
-
-unset(_warnings_cxx_temp)
 
 # use the same warning flags for C
 set(compiler_warnings_c "${compiler_warnings_cxx}")
 
-foreach(_warn ${COMPILER_WARNINGS_CUDA})
+foreach(_warn ${COMPILER_FLAGS_WARNINGS_CUDA})
   check_and_append_flag(FLAGS "${_warn}" TARGETS compiler_warnings_cuda)
 endforeach()
 
-flags_to_list(compiler_warnings_cxx "${compiler_warnings_cxx}")
 flags_to_list(compiler_warnings_c "${compiler_warnings_c}")
+flags_to_list(compiler_warnings_cxx "${compiler_warnings_cxx}")
 flags_to_list(compiler_warnings_cuda "${compiler_warnings_cuda}")
-message(STATUS "Final Compiler Warnings for C: ${compiler_warnings_c}")
-message(STATUS "Final Compiler Warnings for CXX: ${compiler_warnings_cxx}")
-message(STATUS "Final Compiler Warnings for CUDA: ${compiler_warnings_cuda}")
+message(STATUS "Compiler final warnings for C: ${compiler_warnings_c}")
+message(STATUS "Compiler final warnings for CXX: ${compiler_warnings_cxx}")
+message(STATUS "Compiler final warnings for CUDA: ${compiler_warnings_cuda}")
+
+add_custom_target(compiler_flags_warnings)
+set_target_properties(compiler_flags_warnings
+                      PROPERTIES _c "${compiler_warnings_c}")
+set_target_properties(compiler_flags_warnings
+                      PROPERTIES _cxx "${compiler_warnings_cxx}")
+set_target_properties(compiler_flags_warnings
+                      PROPERTIES _cuda "${compiler_warnings_cuda}")
+unset(compiler_warnings_c)
+unset(compiler_warnings_cxx)
+unset(compiler_warnings_cuda)
 
 #[[
 Function to apply compiler warnings to a target.
@@ -160,18 +145,20 @@ function(warn_target target)
     endforeach()
   endif()
 
+  get_target_property(_c compiler_flags_warnings _c)
+  get_target_property(_cxx compiler_flags_warnings _cxx)
+  get_target_property(_cuda compiler_flags_warnings _cuda)
+
   message(
     VERBOSE
     "Applying compiler warnings to target ${target} by ${CMAKE_CURRENT_FUNCTION}:
-    Compiler Warnings for CXX: ${compiler_warnings_cxx}
-    Compiler Warnings for C: ${compiler_warnings_c}
-    Compiler Warnings for CUDA: ${compiler_warnings_cuda}")
+    Compiler Warnings for C: ${_c}
+    Compiler Warnings for CXX: ${_cxx}
+    Compiler Warnings for CUDA: ${_cuda}")
 
   options_target(
-    ${target}
-    FLAGS
-    $<$<COMPILE_LANGUAGE:CXX>:${compiler_warnings_cxx}> # C++ warnings
-    $<$<COMPILE_LANGUAGE:C>:${_warnings_cxx_temp}> # C warnings
-    $<$<COMPILE_LANGUAGE:CUDA>:${compiler_warnings_cuda}> # Cuda warnings
+    ${target} FLAGS $<$<COMPILE_LANGUAGE:C>:${_c}> # C warnings
+    $<$<COMPILE_LANGUAGE:CXX>:${_cxx}> # C++ warnings
+    $<$<COMPILE_LANGUAGE:CUDA>:${_cuda}> # Cuda warnings
   )
 endfunction()

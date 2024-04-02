@@ -125,7 +125,9 @@ endif()
 flags_to_list(hardening_links "${hardening_links}")
 
 # Handle the conflics between hardening ubsan and asan
-if(san_available_flags MATCHES "-fsanitize=address")
+if(san_available_flags
+   AND san_available_flags MATCHES "-fsanitize=address"
+   AND hardening_flags MATCHES "-fsanitize-minimal-runtime")
   message(
     WARNING "Try to disable usan minimal runtime due to conflict with asan")
   list(REMOVE_ITEM hardening_flags "-fsanitize=undefined"
@@ -134,8 +136,15 @@ if(san_available_flags MATCHES "-fsanitize=address")
        "-fsanitize-minimal-runtime" "-fno-sanitize-recover=undefined")
 endif()
 
-message(STATUS "Final Hardening flags: ${hardening_flags}")
-message(STATUS "Final Hardening links: ${hardening_links}")
+message(STATUS "Hardening final flags: ${hardening_flags}")
+message(STATUS "Hardening final links: ${hardening_links}")
+
+add_custom_target(hardening_flags)
+set_target_properties(hardening_flags PROPERTIES _flags "${hardening_flags}")
+set_target_properties(hardening_flags PROPERTIES _links "${hardening_links}")
+
+unset(hardening_flags)
+unset(hardening_links)
 
 function(harden_target target)
   if(NOT USE_HARDENING)
@@ -171,8 +180,11 @@ function(harden_target target)
     endif()
   endif()
 
-  set(FLAGS ${hardening_flags} ${target_flags})
-  set(LINKS ${hardening_links} ${target_flags})
+  get_target_property(_flags hardening_flags _flags)
+  get_target_property(_links hardening_flags _links)
+
+  set(FLAGS ${_flags} ${target_flags})
+  set(LINKS ${_links} ${target_flags})
 
   message(VERBOSE "Hardening target ${target} by ${CMAKE_CURRENT_FUNCTION}:
     Hardening compiling flags: ${FLAGS}
