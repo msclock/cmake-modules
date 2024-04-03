@@ -8,7 +8,7 @@ include_guard(GLOBAL)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../Common.cmake)
 
-set(COMPILER_FLAGS_WARNINGS_CXX
+set(COMPILER_FLAGS_WARNINGS_MSVC
     /W4 # Baseline reasonable warnings
     /w14242 # 'identifier': conversion from 'type1' to 'type2', possible loss of
             # data
@@ -40,6 +40,9 @@ set(COMPILER_FLAGS_WARNINGS_CXX
     /w14928 # illegal copy-initialization; more than one user-defined conversion
             # has been implicitly applied
     /permissive- # standards conformance mode for MSVC compiler.
+)
+
+set(COMPILER_FLAGS_WARNINGS_GNU
     -Wall # all warnings on
     -Wextra # reasonable and standard
     -Wshadow # warn the user if a variable declaration shadows one from a parent
@@ -88,20 +91,44 @@ message(
   STATUS
     "Use Compiler flags:
   Compiler Flags Options:
-    COMPILER_FLAGS_WARNINGS_CXX: ${COMPILER_FLAGS_WARNINGS_CXX}
+    COMPILER_FLAGS_WARNINGS_MSVC: ${COMPILER_FLAGS_WARNINGS_MSVC}
+    COMPILER_FLAGS_WARNINGS_GNU: ${COMPILER_FLAGS_WARNINGS_GNU}
     COMPILER_FLAGS_WARNINGS_CUDA: ${COMPILER_FLAGS_WARNINGS_CUDA}
     COMPILER_FLAGS_WARNINGS_AS_ERRORS: If treat warnings as errors. Default is OFF.
     COMPILER_FLAGS_SKIP_TARGETS_REGEXES: List of regexes to skip targets. Default is empty."
 )
 
-foreach(_warn ${COMPILER_FLAGS_WARNINGS_CXX})
+if(MSVC)
+  set(_warnings_cxx_temp ${COMPILER_FLAGS_WARNINGS_MSVC})
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
+                                               ".*Clang")
+  set(_warnings_cxx_temp ${COMPILER_FLAGS_WARNINGS_GNU})
+else()
+  message(
+    AUTHOR_WARNING
+      "No compiler warnings set for CXX compiler: '${CMAKE_CXX_COMPILER_ID}'")
+endif()
+
+message(VERBOSE "Check Compiler Warnings CXX: ${_warnings_cxx_temp}")
+
+foreach(_warn ${_warnings_cxx_temp})
   check_and_append_flag(FLAGS "${_warn}" TARGETS compiler_warnings_cxx)
 endforeach()
 
+unset(_warnings_cxx_temp)
+
 if(COMPILER_FLAGS_WARNINGS_AS_ERRORS)
-  foreach(_warn /WX -Werror)
-    check_and_append_flag(FLAGS "${_warn}" TARGETS compiler_warnings_cxx)
-  endforeach()
+  if(MSVC)
+    check_and_append_flag(FLAGS "/WX" TARGETS compiler_warnings_cxx)
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
+                                                 ".*Clang")
+    check_and_append_flag(FLAGS "-Werror" TARGETS compiler_warnings_cxx)
+  else()
+    message(
+      AUTHOR_WARNING
+        "No compiler warnings as errors set for CXX compiler: '${CMAKE_CXX_COMPILER_ID}'"
+    )
+  endif()
 endif()
 
 # use the same warning flags for C
