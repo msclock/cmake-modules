@@ -108,8 +108,9 @@ set(USE_SANITIZER_MSAN_FLAGS
     # MSVC
     "/fsanitize=memory"
     # GNU/Clang
-    "-g -fsanitize=memory -fsanitize-memory-track-origins"
+    "-g -fsanitize=memory -fno-omit-frame-pointer -fsanitize-memory-track-origins"
     # Optional: -fno-optimize-sibling-calls -fsanitize-memory-track-origins=2
+    "-g -fsanitize=memory -fno-omit-frame-pointer"
     "-g -fsanitize=memory")
 
 set(USE_SANITIZER_USAN_FLAGS # GNU/Clang
