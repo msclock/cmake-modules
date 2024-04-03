@@ -22,82 +22,6 @@ include_guard(GLOBAL)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../Common.cmake)
 
-message(
-  VERBOSE
-  "Sanitizer
-  ---------------
-
-  Sanitizers are tools that perform checks during a program’s runtime and
-  returns issues, and as such, along with unit testing, code coverage and static
-  analysis, is another tool to add to the programmers toolbox. And of course,
-  like the previous tools, are tragically simple to add into any project using
-  CMake, allowing any project and developer to quickly and easily use.
-
-  A quick rundown of the tools available, and what they do:
-
-  LeakSanitizer detects memory leaks, or issues where memory is allocated and
-  never deallocated, causing programs to slowly consume more and more memory,
-  eventually leading to a crash.
-
-
-  AddressSanitizer
-  ^^^^^^^^^^^^^^^^
-
-  AddressSanitizer is a fast memory error detector. It is useful for detecting
-  most issues dealing with memory, such as:
-    - Out of bounds accesses to heap, stack, global
-    - Use after free
-    - Use after return
-    - Use after scope
-    - Double-free, invalid free
-    - Memory leaks (using LeakSanitizer)
-
-  ThreadSanitizer
-  ^^^^^^^^^^^^^^^
-
-  ThreadSanitizer detects data races for multi-threaded code.
-
-  UndefinedSanitinzer
-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-  UndefinedSanitinzer detects the use of various features of C/C++ that
-  are explicitly listed as resulting in undefined behaviour. Most notably:
-    - Using misaligned or null pointer.
-    - Signed integer overflow
-    - Conversion to, from, or between floating-point types which would overflow the destination
-    - Division by zero
-    - Unreachable code
-
-  MemorySanitizer
-  ^^^^^^^^^^^^^^^
-
-  MemorySanitizer detects uninitialized reads.
-
-  CFI
-  ^^^
-
-  Control Flow Integrity is designed to detect certain forms of undefined
-  behaviour that can potentially allow attackers to subvert the program's
-  control flow. These are used by declaring the USE_SANITIZER CMake variable as
-  string containing any of:
-    - Address
-    - Memory
-    - Undefined
-    - Thread
-    - Leak
-    - CFI
-
-  Multiple values are allowed, e.g. -DUSE_SANITIZER=Address,Leak but some
-  sanitizers cannot be combined together, e.g.-DUSE_SANITIZER=Address,Memory
-  will result in configuration error. The delimiter character is not required
-  and -DUSE_SANITIZER=AddressLeak would work as well.
-
-  Sanitizer provides the commands:
-
-    sanitize_target(target) - add sanitizer flags to a target including copy sanitizer runtime.
-    copy_sanitizer_runtime(target) - copy sanitizer runtime to target location.
-")
-
 set(USE_SANITIZER_ASAN_FLAGS
     # MSVC
     "/fsanitize=address /Zi"
@@ -146,6 +70,22 @@ message(
   Note:
     - Thread can not work with Address and Leak sanitizers.
     - Memory can not work with Address, Leak, and Thread sanitizers.")
+
+message(
+  VERBOSE
+  "Multiple values are allowed with USE_SANITIZER, e.g. -DUSE_SANITIZER=Address,Leak but some
+  sanitizers cannot be combined together, e.g.-DUSE_SANITIZER=Address,Memory
+  will result in configuration error. The delimiter character is not required
+  and -DUSE_SANITIZER=AddressLeak would work as well.
+
+  You can add more flags to USE_SANITIZER_EXTRA_FLAGS referring to the sanitizer
+  documentation <https://clang.llvm.org/docs/index.html>.
+
+  Sanitizer provides the commands:
+
+    sanitize_target(target) - add sanitizer flags to a target including copy sanitizer runtime.
+    copy_sanitizer_runtime(target) - copy sanitizer runtime to target location.
+")
 
 string(TOLOWER "${USE_SANITIZER}" USE_SANITIZER)
 
