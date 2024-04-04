@@ -85,7 +85,9 @@ set(COMPILER_FLAGS_WARNINGS_CUDA
              # context
 )
 
-option(COMPILER_FLAGS_WARNINGS_AS_ERRORS "Treat Warnings As Errors" OFF)
+if(CMAKE_VERSION VERSION_LESS 3.24)
+  option(CMAKE_COMPILE_WARNING_AS_ERROR "Treat Warnings As Errors" OFF)
+endif()
 
 message(
   STATUS
@@ -94,7 +96,7 @@ message(
     COMPILER_FLAGS_WARNINGS_MSVC: ${COMPILER_FLAGS_WARNINGS_MSVC}
     COMPILER_FLAGS_WARNINGS_GNU: ${COMPILER_FLAGS_WARNINGS_GNU}
     COMPILER_FLAGS_WARNINGS_CUDA: ${COMPILER_FLAGS_WARNINGS_CUDA}
-    COMPILER_FLAGS_WARNINGS_AS_ERRORS: If treat warnings as errors. Default is OFF.
+    CMAKE_COMPILE_WARNING_AS_ERROR: If treat warnings as errors. Default is ${CMAKE_COMPILE_WARNING_AS_ERROR}.
     COMPILER_FLAGS_SKIP_TARGETS_REGEXES: List of regexes to skip targets. Default is empty."
 )
 
@@ -117,7 +119,7 @@ endforeach()
 
 unset(_warnings_cxx_temp)
 
-if(COMPILER_FLAGS_WARNINGS_AS_ERRORS)
+if(CMAKE_COMPILE_WARNING_AS_ERROR)
   if(MSVC)
     check_and_append_flag(FLAGS "/WX" TARGETS compiler_warnings_cxx)
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
