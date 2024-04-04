@@ -664,13 +664,13 @@ function(add_code_coverage_all_targets)
       endif()
 
       foreach(_dir ${arg_INCLUDE_DIRS})
-        cmake_path(CONVERT ${_dir} TO_NATIVE_PATH_LIST _dir)
+        cmake_path(CONVERT ${_dir} TO_CMAKE_PATH_LIST _dir)
         list(APPEND _include_command "--filter")
         list(APPEND _include_command "${_dir}")
       endforeach()
 
       foreach(_dir ${arg_EXCLUDE_DIRS})
-        cmake_path(CONVERT ${_dir} TO_NATIVE_PATH_LIST _dir)
+        cmake_path(CONVERT ${_dir} TO_CMAKE_PATH_LIST _dir)
         # gcovr prefers excludes by relative path
         file(RELATIVE_PATH _rel ${CMAKE_SOURCE_DIR} ${_dir})
         list(APPEND _exclude_command "--exclude")
