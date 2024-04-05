@@ -40,7 +40,7 @@ set(COMPILER_FLAGS_WARNINGS_MSVC
     /w14928 # illegal copy-initialization; more than one user-defined conversion
             # has been implicitly applied
     /permissive- # standards conformance mode for MSVC compiler.
-)
+    CACHE STRING "Compiler warnings flags for MSVC")
 
 set(COMPILER_FLAGS_WARNINGS_GNU
     -Wall # all warnings on
@@ -74,7 +74,7 @@ set(COMPILER_FLAGS_WARNINGS_GNU
     -Wuseless-cast # warn if you perform a cast to the same type
     -Wsuggest-override # warn if an overridden member function is not marked
                        # 'override' or 'final'
-)
+    CACHE STRING "Compiler warnings flags for GNU")
 
 set(COMPILER_FLAGS_WARNINGS_CUDA
     -Wall # Wall all warnings
@@ -83,7 +83,7 @@ set(COMPILER_FLAGS_WARNINGS_CUDA
     -Wconversion # Warn on type conversions that may lose data"
     -Wshadow # Warn the user if a variable declaration shadows one from a parent
              # context
-)
+    CACHE STRING "Compiler warnings flags for CUDA")
 
 if(CMAKE_VERSION VERSION_LESS 3.24)
   option(CMAKE_COMPILE_WARNING_AS_ERROR "Treat Warnings As Errors" OFF)

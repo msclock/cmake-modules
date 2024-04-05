@@ -23,7 +23,8 @@ set(USE_CPPCHECK_OPTIONS
     # ignores code that cppcheck thinks is invalid C++
     --suppress=syntaxError
     --suppress=preprocessorErrorDirective
-    --inconclusive)
+    --inconclusive
+    CACHE STRING "cppcheck run options")
 
 set(USE_CPPCHECK_SUPPRESS_DIR
     "*:${CMAKE_CURRENT_BINARY_DIR}/_deps/*.h"

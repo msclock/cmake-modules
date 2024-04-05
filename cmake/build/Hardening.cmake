@@ -29,12 +29,12 @@ if(MSVC)
       /NXCOMPAT # Data Execution Prevention
       /DYNAMICBASE # Image Randomization
       /CETCOMPAT # Enhanced Mitigation Experience Toolkit (EMET)
-  )
+      CACHE STRING "Additional hardening compilation flags for MSVC")
 
   set(USE_HARDENING_LINKS
       /NXCOMPAT # Data Execution Prevention
       /CETCOMPAT # Enhanced Mitigation Experience Toolkit (EMET)
-  )
+      CACHE STRING "Additional hardening linking flags for MSVC")
 else()
   set(USE_HARDENING_FLAGS
       -D_GLIBCXX_ASSERTIONS # Enable assertions
@@ -63,7 +63,7 @@ else()
       -ftrivial-auto-var-init=zero
       -Wtrampolines # Enable trampolines(gcc only)
       -mbranch-protection=standard # Enable indirect branches(aarch64 only)
-  )
+      CACHE STRING "Additional hardening compilation flags for GCC/Clang")
 
   set(USE_HARDENING_LINKS
       -fstack-protector-strong # Enable stack protector
@@ -77,7 +77,7 @@ else()
                    # read-only
       -Wl,-z,now # Mark relocation table entries resolved at load-time as
                  # read-only. It impacts startup performance
-  )
+      CACHE STRING "Additional hardening linking flags for GCC/Clang")
 endif()
 
 message(
