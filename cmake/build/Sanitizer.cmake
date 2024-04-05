@@ -26,7 +26,8 @@ set(USE_SANITIZER_ASAN_FLAGS
     # MSVC
     "/fsanitize=address /Zi"
     # Clang 3.2+ use this version. The no-omit-frame-pointer option is optional.
-    "-g -fsanitize=address -fno-omit-frame-pointer" "-g -fsanitize=address")
+    "-g -fsanitize=address -fno-omit-frame-pointer" "-g -fsanitize=address"
+    CACHE STRING "Compile with Address sanitizer flags.")
 
 set(USE_SANITIZER_MSAN_FLAGS
     # MSVC
@@ -35,19 +36,24 @@ set(USE_SANITIZER_MSAN_FLAGS
     "-g -fsanitize=memory -fno-omit-frame-pointer -fsanitize-memory-track-origins"
     # Optional: -fno-optimize-sibling-calls -fsanitize-memory-track-origins=2
     "-g -fsanitize=memory -fno-omit-frame-pointer"
-    "-g -fsanitize=memory")
+    "-g -fsanitize=memory"
+    CACHE STRING "Compile with Memory sanitizer flags.")
 
 set(USE_SANITIZER_USAN_FLAGS # GNU/Clang
-    "-g -fsanitize=undefined")
+    "-g -fsanitize=undefined"
+    CACHE STRING "Compile with Undefined Behaviour sanitizer flags.")
 
 set(USE_SANITIZER_TSAN_FLAGS # GNU/Clang
-    "-g -fsanitize=thread")
+    "-g -fsanitize=thread"
+    CACHE STRING "Compile with Thread sanitizer flags.")
 
 set(USE_SANITIZER_LSAN_FLAGS # GNU/Clang
-    "-g -fsanitize=leak")
+    "-g -fsanitize=leak"
+    CACHE STRING "Compile with Leak sanitizer flags.")
 
 set(USE_SANITIZER_CFI_FLAGS # GNU/Clang
-    "-g -fsanitize=cfi")
+    "-g -fsanitize=cfi"
+    CACHE STRING "Compile with Control Flow Integrity(CFI) sanitizer flags.")
 
 set(USE_SANITIZER
     "Address,Undefined"

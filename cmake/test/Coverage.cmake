@@ -92,13 +92,17 @@ message(
         - lcov: preferred for gcc compilers.
         - opencppcoverage: preferred for msvc compilers.
         - gcovr: preferred for non-msvc compilers.
-    OFF - Disables code coverage.")
+    OFF - Disables code coverage.
+    CODE_COVERAGE_GCOVR_REPORT_FORMAT: Sets the gcovr report format. Default is lcov."
+)
 
 if(NOT CODE_COVERAGE)
   message(STATUS "Code coverage disabled by CODE_COVERAGE evaluates to false.")
 endif()
 
-set(CODE_COVERAGE_GCOVR_REPORT_FORMAT "lcov")
+set(CODE_COVERAGE_GCOVR_REPORT_FORMAT
+    "lcov"
+    CACHE STRING "Sets the gcovr report format.")
 
 # Programs to generate coverage tools
 find_program(LLVM_COV_PATH llvm-cov)
