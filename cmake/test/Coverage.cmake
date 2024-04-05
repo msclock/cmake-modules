@@ -700,7 +700,7 @@ function(add_code_coverage_all_targets)
           ${GCOVR_PATH} --html-details --root ${CMAKE_SOURCE_DIR}
           --exclude-noncode-lines --output
           ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage/index.html ${GCOV_OPTION}
-          ${_include_command} ${_exclude_command} --delete
+          ${_include_command} ${_exclude_command}
         DEPENDS ccov-all-capture)
 
       return()
