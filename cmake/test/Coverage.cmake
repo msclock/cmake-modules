@@ -681,11 +681,11 @@ function(add_code_coverage_all_targets)
       add_custom_target(
         ccov-all-capture
         COMMAND ${CMAKE_COMMAND} -E rm -f
-                ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.xml
+                ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.info
         COMMAND
-          ${GCOVR_PATH} --print-summary --xml-pretty --root ${CMAKE_SOURCE_DIR}
+          ${GCOVR_PATH} --print-summary -lcov --root ${CMAKE_SOURCE_DIR}
           --exclude-noncode-lines --output
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.xml ${GCOV_OPTION}
+          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.info ${GCOV_OPTION}
           ${_include_command} ${_exclude_command}
         DEPENDS ccov-all-processing)
 
