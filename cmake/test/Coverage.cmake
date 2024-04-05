@@ -98,6 +98,8 @@ if(NOT CODE_COVERAGE)
   message(STATUS "Code coverage disabled by CODE_COVERAGE evaluates to false.")
 endif()
 
+set(CODE_COVERAGE_GCOVR_REPORT_FORMAT "lcov")
+
 # Programs to generate coverage tools
 find_program(LLVM_COV_PATH llvm-cov)
 find_program(LLVM_PROFDATA_PATH llvm-profdata)
@@ -677,16 +679,24 @@ function(add_code_coverage_all_targets)
         list(APPEND _exclude_command "${_rel}")
       endforeach()
 
+      if(CODE_COVERAGE_GCOVR_REPORT_FORMAT MATCHES "lcov")
+        set(_gcovr_format_option "--lcov")
+        set(_gcovr_output_file "coverage.info")
+      else()
+        set(_gcovr_format_option "--xml-pretty")
+        set(_gcovr_output_file "coverage.xml")
+      endif()
+
       # Generate the coverage report using gcovr
       add_custom_target(
         ccov-all-capture
         COMMAND ${CMAKE_COMMAND} -E rm -f
-                ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.info
+                ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${_gcovr_output_file}
         COMMAND
-          ${GCOVR_PATH} --print-summary -lcov --root ${CMAKE_SOURCE_DIR}
-          --exclude-noncode-lines --output
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.info ${GCOV_OPTION}
-          ${_include_command} ${_exclude_command}
+          ${GCOVR_PATH} --print-summary ${_gcovr_format_option} --root
+          ${CMAKE_SOURCE_DIR} --exclude-noncode-lines --output
+          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${_gcovr_output_file}
+          ${GCOV_OPTION} ${_include_command} ${_exclude_command}
         DEPENDS ccov-all-processing)
 
       # Generates HTML output of all targets for perusal
