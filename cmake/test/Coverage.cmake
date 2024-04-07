@@ -83,32 +83,50 @@ Enable ctest *Coverage, such as ctest -T Experimental[Coverage] by msclock
 
 option(CODE_COVERAGE "Enables code coverage instrumentation and targets." ON)
 
+set(CODE_COVERAGE_GCOVR_REPORT_FORMAT
+    "lcov"
+    CACHE STRING "Sets the gcovr report format.")
+
+set(CODE_COVERAGE_GCOV
+    "gcov"
+    CACHE STRING "Sets the gcov executable to find in find_program().")
+
+if(CMAKE_C_COMPILER_ID MATCHES [[(Apple)?Clang]] OR CMAKE_CXX_COMPILER_ID
+                                                    MATCHES [[(Apple)?Clang]])
+  set(CODE_COVERAGE_EXTRA_FLAGS
+      "gcov -s ${CMAKE_BINARY_DIR}"
+      CACHE STRING "Extra command line flags to pass to ctest *Coverage")
+elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  set(CODE_COVERAGE_EXTRA_FLAGS
+      "-s ${CMAKE_BINARY_DIR}"
+      CACHE STRING "Extra command line flags to pass to ctest *Coverage")
+endif()
+
 message(
   STATUS
     "Use code coverage with CODE_COVERAGE: ${CODE_COVERAGE}
   Available Options:
-    ON - Enables code coverage with auto-selected supported tools.
-        - llvm-cov: preferred for clang compilers.
-        - lcov: preferred for gcc compilers.
-        - opencppcoverage: preferred for msvc compilers.
-        - gcovr: preferred for non-msvc compilers.
-    OFF - Disables code coverage.
-    CODE_COVERAGE_GCOVR_REPORT_FORMAT: Sets the gcovr report format. Default is lcov."
+    CODE_COVERAGE: ON/OFF - Enables/Disables code coverage. Default is ${CODE_COVERAGE}.
+      ON - Enables code coverage with auto-selected supported tools.
+          - llvm-cov: preferred for clang compilers.
+          - lcov: preferred for gcc compilers.
+          - opencppcoverage: preferred for msvc compilers.
+          - gcovr: preferred for non-msvc compilers.
+      OFF - Disables code coverage.
+      CODE_COVERAGE_GCOV: Sets the gcov executable to find in find_program(). Default is ${CODE_COVERAGE_GCOV}.
+    CODE_COVERAGE_GCOVR_REPORT_FORMAT: Sets the gcovr report format. Default is ${CODE_COVERAGE_GCOVR_REPORT_FORMAT}.
+    CODE_COVERAGE_EXTRA_FLAGS: Extra command line flags to pass to ctest *Coverage. Default is ${CODE_COVERAGE_EXTRA_FLAGS}."
 )
 
 if(NOT CODE_COVERAGE)
   message(STATUS "Code coverage disabled by CODE_COVERAGE evaluates to false.")
 endif()
 
-set(CODE_COVERAGE_GCOVR_REPORT_FORMAT
-    "lcov"
-    CACHE STRING "Sets the gcovr report format.")
-
 # Programs to generate coverage tools
 find_program(LLVM_COV_PATH llvm-cov)
 find_program(LLVM_PROFDATA_PATH llvm-profdata)
 find_program(LCOV_PATH lcov)
-find_program(GCOV_PATH gcov)
+find_program(GCOV_PATH ${CODE_COVERAGE_GCOV})
 find_program(GENHTML_PATH genhtml)
 find_program(GCOVR_PATH gcovr)
 find_program(OCC_PATH NAMES OpenCppCoverage)
@@ -144,15 +162,17 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_INITIALIZED)
     set(COVERAGE_COMMAND
         "${LLVM_COV_PATH}"
         CACHE STRING "LLVM coverage tool for gcov" FORCE)
-    set(COVERAGE_EXTRA_FLAGS
-        "gcov ${USER_COVERAGE_EXTRA_FLAGS} -s ${CMAKE_BINARY_DIR}"
-        CACHE STRING "Extra command line flags to pass to the coverage tool"
-              FORCE)
+    if(LLVM_COV_PATH)
+      set(COVERAGE_EXTRA_FLAGS
+          "${CODE_COVERAGE_EXTRA_FLAGS}"
+          CACHE STRING "Extra command line flags to pass to the coverage tool"
+                FORCE)
+    endif()
   elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                               "GNU")
     if(GCOV_PATH)
       set(COVERAGE_EXTRA_FLAGS
-          "${USER_COVERAGE_EXTRA_FLAGS} -s ${CMAKE_BINARY_DIR}"
+          "${CODE_COVERAGE_EXTRA_FLAGS}"
           CACHE STRING "Extra command line flags to pass to the coverage tool"
                 FORCE)
     endif(GCOV_PATH)
