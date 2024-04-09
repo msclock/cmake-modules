@@ -113,7 +113,7 @@ message(
           - opencppcoverage: preferred for msvc compilers.
           - gcovr: preferred for non-msvc compilers.
       OFF - Disables code coverage.
-      CODE_COVERAGE_GCOV: Sets the gcov executable to find in find_program(). Default is ${CODE_COVERAGE_GCOV}.
+    CODE_COVERAGE_GCOV: Sets the gcov executable to find in find_program(). Default is ${CODE_COVERAGE_GCOV}.
     CODE_COVERAGE_GCOVR_REPORT_FORMAT: Sets the gcovr report format. Default is ${CODE_COVERAGE_GCOVR_REPORT_FORMAT}.
     CODE_COVERAGE_EXTRA_FLAGS: Extra command line flags to pass to ctest *Coverage. Default is ${CODE_COVERAGE_EXTRA_FLAGS}."
 )
@@ -510,6 +510,12 @@ function(target_code_coverage TARGET_NAME)
           set(EXTERNAL_OPTION --no-external)
         endif()
 
+        set(GCOV_OPTION)
+
+        if(GCOV_PATH)
+          set(GCOV_OPTION --gcov-tool "${GCOV_PATH}")
+        endif()
+
         # Capture the coverage information
         add_custom_target(
           ccov-capture-${arg_COVERAGE_TARGET_NAME}
@@ -519,8 +525,8 @@ function(target_code_coverage TARGET_NAME)
                   $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
           COMMAND
             ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
-            ${CMAKE_SOURCE_DIR} --capture ${EXTERNAL_OPTION} --output-file
-            ${_coverage_info}
+            ${CMAKE_SOURCE_DIR} --capture ${GCOV_OPTION} ${EXTERNAL_OPTION}
+            --output-file ${_coverage_info}
           COMMAND ${_exclude_glob_command}
           DEPENDS ${TARGET_NAME})
 
@@ -864,12 +870,18 @@ function(add_code_coverage_all_targets)
         set(_exclude_glob_command ;)
       endif()
 
+      set(GCOV_OPTION)
+
+      if(GCOV_PATH)
+        set(GCOV_OPTION --gcov-tool "${GCOV_PATH}")
+      endif()
+
       # Capture coverage data
       add_custom_target(
         ccov-all-capture
         COMMAND ${CMAKE_COMMAND} -E rm -f ${_coverage_info}
         COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture
-                --output-file ${_coverage_info}
+                ${GCOV_OPTION} --output-file ${_coverage_info}
         COMMAND ${_exclude_glob_command}
         DEPENDS ccov-all-processing)
 
