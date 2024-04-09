@@ -102,6 +102,14 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
       CACHE STRING "Extra command line flags to pass to ctest *Coverage")
 endif()
 
+set(CODE_COVERAGE_LCOV_EXTRA_FLAGS
+    "--ignore-errors=gcov,mismatch"
+    CACHE STRING "Extra command line flags to pass to lcov.")
+
+set(CODE_COVERAGE_GCOVR_EXTRA_FLAGS
+    "--gcov-ignore-errors=source_not_found"
+    CACHE STRING "Extra command line flags to pass to lcov.")
+
 message(
   STATUS
     "Use code coverage with CODE_COVERAGE: ${CODE_COVERAGE}
@@ -115,6 +123,8 @@ message(
       OFF - Disables code coverage.
     CODE_COVERAGE_GCOV: Sets the gcov executable to find in find_program(). Default is ${CODE_COVERAGE_GCOV}.
     CODE_COVERAGE_GCOVR_REPORT_FORMAT: Sets the gcovr report format. Default is ${CODE_COVERAGE_GCOVR_REPORT_FORMAT}.
+    CODE_COVERAGE_GCOVR_EXTRA_FLAGS: Extra command line flags to pass to gcovr. Default is ${CODE_COVERAGE_GCOVR_EXTRA_FLAGS}.
+    CODE_COVERAGE_LCOV_EXTRA_FLAGS: Extra command line flags to pass to lcov. Default is ${CODE_COVERAGE_LCOV_EXTRA_FLAGS}.
     CODE_COVERAGE_EXTRA_FLAGS: Extra command line flags to pass to ctest *Coverage. Default is ${CODE_COVERAGE_EXTRA_FLAGS}."
 )
 
@@ -525,8 +535,8 @@ function(target_code_coverage TARGET_NAME)
                   $<TARGET_FILE:${TARGET_NAME}> ${arg_ARGS}
           COMMAND
             ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --base-directory
-            ${CMAKE_SOURCE_DIR} --capture ${GCOV_OPTION} ${EXTERNAL_OPTION}
-            --output-file ${_coverage_info}
+            ${CMAKE_SOURCE_DIR} --capture --output-file ${EXTERNAL_OPTION}
+            ${_coverage_info} ${GCOV_OPTION} ${CODE_COVERAGE_LCOV_EXTRA_FLAGS}
           COMMAND ${_exclude_glob_command}
           DEPENDS ${TARGET_NAME})
 
@@ -724,9 +734,10 @@ function(add_code_coverage_all_targets)
                 ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${_gcovr_output_file}
         COMMAND
           ${GCOVR_PATH} --print-summary ${_gcovr_format_option} --root
-          ${CMAKE_SOURCE_DIR} --exclude-noncode-lines --output
+          ${CMAKE_SOURCE_DIR} --output
           ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/${_gcovr_output_file}
           ${GCOV_OPTION} ${_include_command} ${_exclude_command}
+          ${CODE_COVERAGE_GCOVR_EXTRA_FLAGS}
         DEPENDS ccov-all-processing)
 
       # Generates HTML output of all targets for perusal
@@ -737,10 +748,10 @@ function(add_code_coverage_all_targets)
         COMMAND ${CMAKE_COMMAND} -E make_directory
                 ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage
         COMMAND
-          ${GCOVR_PATH} --html-details --root ${CMAKE_SOURCE_DIR}
-          --exclude-noncode-lines --output
+          ${GCOVR_PATH} --html-details --root ${CMAKE_SOURCE_DIR} --output
           ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage/index.html ${GCOV_OPTION}
           ${_include_command} ${_exclude_command}
+          ${CODE_COVERAGE_GCOVR_EXTRA_FLAGS}
         DEPENDS ccov-all-capture)
 
       return()
@@ -880,8 +891,9 @@ function(add_code_coverage_all_targets)
       add_custom_target(
         ccov-all-capture
         COMMAND ${CMAKE_COMMAND} -E rm -f ${_coverage_info}
-        COMMAND ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture
-                ${GCOV_OPTION} --output-file ${_coverage_info}
+        COMMAND
+          ${LCOV_PATH} --directory ${CMAKE_BINARY_DIR} --capture --output-file
+          ${_coverage_info} ${GCOV_OPTION} ${CODE_COVERAGE_LCOV_EXTRA_FLAGS}
         COMMAND ${_exclude_glob_command}
         DEPENDS ccov-all-processing)
 
