@@ -20,7 +20,6 @@ Example:
   gennerate_git_header()
   add_library(header INTERFACE)
   target_include_interface_directories(header ${CMAKE_BINARY_DIR}/git/include)
-  target_link_libraries(header INTERFACE absl::log)
   install_target(
     NAME
     header
@@ -66,97 +65,97 @@ function(generate_git_header)
 GIT_EXTERN_C_BEGIN
 
 /// The commit project version.
-const char* git_ProjectVersion() {
+inline const char* git_ProjectVersion() {
     return R\"(@CMAKE_PROJECT_VERSION@)\"\;
 }
 
 /// The commit project version major.
-const char* git_ProjectVersionMajor() {
+inline const char* git_ProjectVersionMajor() {
     return R\"(@CMAKE_PROJECT_VERSION_MAJOR@)\"\;
 }
 
 /// The commit project version minor.
-const char* git_ProjectVersionMinor() {
+inline const char* git_ProjectVersionMinor() {
     return R\"(@CMAKE_PROJECT_VERSION_MINOR@)\"\;
 }
 
 /// The commit project version patch.
-const char* git_ProjectVersionPatch() {
+inline const char* git_ProjectVersionPatch() {
     return R\"(@CMAKE_PROJECT_VERSION_PATCH@)\"\;
 }
 
 /// The commit project version tweak.
-const char* git_ProjectVersionTweak() {
+inline const char* git_ProjectVersionTweak() {
     return R\"(@CMAKE_PROJECT_VERSION_TWEAK@)\"\;
 }
 
 /// The commit author's name.
-const char* git_AuthorName() {
+inline const char* git_AuthorName() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_AUTHOR_NAME@)\"\;
 }
 
 /// The commit author's email.
-const char* git_AuthorEmail() {
+inline const char* git_AuthorEmail() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_AUTHOR_EMAIL@)\"\;
 }
 
 /// The commit last tag.
-const char* git_CommitTag() {
+inline const char* git_CommitTag() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_TAG@)\"\;
 }
 
 /// The commit number since last tag.
-const char* git_CommitTagRevision() {
+inline const char* git_CommitTagRevision() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_TAG_REVISION@)\"\;
 }
 
 /// The commit number.
-const char* git_CommitRevision() {
+inline const char* git_CommitRevision() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_REVISION@)\"\;
 }
 
 /// The commit number of the day.
-const char* git_CommitDateRevision() {
+inline const char* git_CommitDateRevision() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_DATE_REVISION@)\"\;
 }
 
 /// The commit SHA1.
-const char* git_CommitSHA1() {
+inline const char* git_CommitSHA1() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_HASH@)\"\;
 }
 
 /// The commit short SHA1.
-const char* git_CommitSHA1Short() {
+inline const char* git_CommitSHA1Short() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_HASH_SHORT@)\"\;
 }
 
 /// The commit date.
-const char* git_CommitDate() {
+inline const char* git_CommitDate() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_AUTHOR_DATE@)\"\;
 }
 
 /// The commit time.
-const char* git_CommitTime() {
+inline const char* git_CommitTime() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_AUTHOR_TIME@)\"\;
 }
 
 /// The commit TZ.
-const char* git_CommitTZ() {
+inline const char* git_CommitTZ() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_AUTHOR_TZ@)\"\;
 }
 
 /// The commit subject.
-const char* git_CommitSubject() {
+inline const char* git_CommitSubject() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_SUBJECT@)\"\;
 }
 
 /// The commit body.
-const char* git_CommitBody() {
+inline const char* git_CommitBody() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_BODY@)\"\;
 }
 
 /// The commit describe.
-const char* git_Describe() {
+inline const char* git_Describe() {
     return R\"(@CMAKE_PROJECT_GIT_COMMIT_DESCRIBE@)\"\;
 }
 
