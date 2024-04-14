@@ -26,8 +26,10 @@ set(USE_CPPCHECK_OPTIONS
     --inconclusive
     CACHE STRING "cppcheck run options")
 
+cmake_path(NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR}/_deps/)
+
 set(USE_CPPCHECK_SUPPRESS_DIR
-    "*:${CMAKE_CURRENT_BINARY_DIR}/_deps/*.h"
+    "*:${CMAKE_CURRENT_BINARY_DIR}/_deps/*"
     CACHE STRING "Directory to suppress cppcheck warnings")
 
 set(USE_CPPCHECK_WARNINGS_AS_ERRORS
@@ -67,8 +69,9 @@ else()
 endif()
 
 if(VCPKG_INSTALLED_DIR AND VCPKG_TARGET_TRIPLET)
-  list(APPEND USE_CPPCHECK_OPTIONS -I
-       ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
+  list(APPEND USE_CPPCHECK_OPTIONS
+       -I${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
+       --suppress=*:${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/*)
 endif()
 
 set(CMAKE_CXX_CPPCHECK
