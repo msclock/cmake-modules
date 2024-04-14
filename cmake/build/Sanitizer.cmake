@@ -254,6 +254,12 @@ Note:
 
 ]]
 function(sanitize_target target)
+  set(_opts)
+  set(_single_opts)
+  set(_multi_opts EXCLUDE_FLAGS INCLUDE_FLAGS)
+  cmake_parse_arguments(PARSE_ARGV 0 arg "${_opts}" "${_single_opts}"
+                        "${_multi_opts}")
+
   if(NOT USE_SANITIZER)
     return()
   endif()
@@ -283,7 +289,7 @@ function(sanitize_target target)
   get_target_property(_san sanitizer_flags _san)
 
   if(NOT MSVC)
-    set(FLAGS FLAGS ${_san})
+    set(FLAGS ${_san})
     foreach(sanitizer address memory undefined thread leak cfi)
       if("-fsanitize=${sanitizer}" IN_LIST _san)
         list(APPEND _links "-fsanitize=${sanitizer}")
@@ -291,22 +297,56 @@ function(sanitize_target target)
     endforeach()
 
     if(_links)
-      set(LINKS LINKS ${_links})
+      set(LINKS ${_links})
     endif()
   else()
     # MSVC support
     if(NOT USE_SANITIZER MATCHES [[enablemsvcannotations]])
       # https://learn.microsoft.com/en-us/answers/questions/864574/enabling-address-sanitizer-results-in-error-lnk203
       # https://learn.microsoft.com/en-us/cpp/sanitizers/error-container-overflow?view=msvc-170
-      set(DEFINITIONS DEFINITIONS _DISABLE_VECTOR_ANNOTATION
-                      _DISABLE_STRING_ANNOTATION)
+      set(DEFINITIONS _DISABLE_VECTOR_ANNOTATION _DISABLE_STRING_ANNOTATION)
     endif()
 
-    set(FLAGS FLAGS ${_san} /Zi /INCREMENTAL:NO)
-    set(LINKS LINKS /INCREMENTAL:NO)
+    set(FLAGS ${_san} /Zi /INCREMENTAL:NO)
+    set(LINKS /INCREMENTAL:NO)
   endif()
 
-  options_target(${target} ${FLAGS} ${LINKS} ${DEFINITIONS})
+  if(arg_INCLUDE_FLAGS)
+    message(VERBOSE
+            "Including flags: ${arg_INCLUDE_FLAGS} for target ${target}")
+    foreach(_include_flag ${arg_INCLUDE_FLAGS})
+      check_and_append_flag(FLAGS "${_include_flag}" TARGETS FLAGS QUOTELESS)
+      check_and_append_flag(FLAGS "${_include_flag}" TARGETS LINKS QUOTELESS)
+    endforeach()
+    message(VERBOSE "Sanitize flags with included flags for ${target}:
+    Sanitize compiling flags: ${FLAGS}
+    Sanitize linking flags: ${LINKS}")
+  endif()
+
+  if(arg_EXCLUDE_FLAGS)
+    message(VERBOSE
+            "Excluding flags: ${arg_EXCLUDE_FLAGS} for target ${target}")
+    foreach(_exclude_flag ${arg_EXCLUDE_FLAGS})
+      list(REMOVE_ITEM FLAGS "${_exclude_flag}")
+      list(REMOVE_ITEM LINKS "${_exclude_flag}")
+    endforeach()
+    message(VERBOSE "Sanitize flags with excluded flags for ${target}:
+    Sanitize compiling flags: ${FLAGS}
+    Sanitize linking flags: ${LINKS}")
+  endif()
+
+  message(VERBOSE "Sanitize target ${target} by ${CMAKE_CURRENT_FUNCTION}:
+    Sanitize compiling flags: ${FLAGS}
+    Sanitize linking flags: ${LINKS}")
+
+  options_target(
+    ${target}
+    FLAGS
+    ${FLAGS}
+    LINKS
+    ${LINKS}
+    DEFINITIONS
+    ${DEFINITIONS})
 
   copy_sanitizer_runtime(${target})
 endfunction()

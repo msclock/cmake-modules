@@ -162,6 +162,12 @@ unset(compiler_warnings_cuda)
 Function to apply compiler warnings to a target.
 ]]
 function(warn_target target)
+  set(_opts)
+  set(_single_opts)
+  set(_multi_opts EXCLUDE_FLAGS INCLUDE_FLAGS)
+  cmake_parse_arguments(PARSE_ARGV 0 arg "${_opts}" "${_single_opts}"
+                        "${_multi_opts}")
+
   if(COMPILER_FLAGS_SKIP_TARGETS_REGEXES)
     foreach(regex ${COMPILER_FLAGS_SKIP_TARGETS_REGEXES})
       if(target MATCHES "${regex}")
@@ -177,6 +183,38 @@ function(warn_target target)
   get_target_property(_c compiler_flags_warnings _c)
   get_target_property(_cxx compiler_flags_warnings _cxx)
   get_target_property(_cuda compiler_flags_warnings _cuda)
+
+  if(arg_INCLUDE_FLAGS)
+    message(VERBOSE
+            "Including flags: ${arg_INCLUDE_FLAGS} for target ${target}")
+    foreach(_include_flag ${arg_INCLUDE_FLAGS})
+      check_and_append_flag(FLAGS "${_include_flag}" TARGETS _c QUOTELESS)
+      check_and_append_flag(FLAGS "${_include_flag}" TARGETS _cxx QUOTELESS)
+      check_and_append_flag(FLAGS "${_include_flag}" TARGETS _cuda QUOTELESS)
+    endforeach()
+    message(
+      VERBOSE
+      "Compiler warnings flags with included flags for ${target}:
+    Compiler Warnings for C: ${_c}
+    Compiler Warnings for CXX: ${_cxx}
+    Compiler Warnings for CUDA: ${_cuda}")
+  endif()
+
+  if(arg_EXCLUDE_FLAGS)
+    message(VERBOSE
+            "Excluding flags: ${arg_EXCLUDE_FLAGS} for target ${target}")
+    foreach(_exclude_flag ${arg_EXCLUDE_FLAGS})
+      list(REMOVE_ITEM _c "${_exclude_flag}")
+      list(REMOVE_ITEM _cxx "${_exclude_flag}")
+      list(REMOVE_ITEM _cuda "${_exclude_flag}")
+    endforeach()
+    message(
+      VERBOSE
+      "Compiler warnings flags with excluded flags for ${target}:
+    Compiler Warnings for C: ${_c}
+    Compiler Warnings for CXX: ${_cxx}
+    Compiler Warnings for CUDA: ${_cuda}")
+  endif()
 
   message(
     VERBOSE

@@ -84,6 +84,7 @@ message(
   STATUS
     "Use hardening compilation with USE_HARDENING: ${USE_HARDENING}
   Hardening Options:
+    USE_HARDENING: Enable hardening compilation flags. Default is ${USE_HARDENING}.
     USE_HARDENING_FLAGS: Default is ${USE_HARDENING_FLAGS}
     USE_HARDENING_LINKS: Default is ${USE_HARDENING_LINKS}
     USE_HARDENING_SKIP_TARGETS_REGEXES: List of regexes to skip targts. Default is empty."
@@ -152,6 +153,12 @@ unset(hardening_flags)
 unset(hardening_links)
 
 function(harden_target target)
+  set(_opts)
+  set(_single_opts)
+  set(_multi_opts EXCLUDE_FLAGS INCLUDE_FLAGS)
+  cmake_parse_arguments(PARSE_ARGV 0 arg "${_opts}" "${_single_opts}"
+                        "${_multi_opts}")
+
   if(NOT USE_HARDENING)
     message(
       VERBOSE
@@ -190,6 +197,30 @@ function(harden_target target)
 
   set(FLAGS ${_flags} ${target_flags})
   set(LINKS ${_links} ${target_flags})
+
+  if(arg_INCLUDE_FLAGS)
+    message(VERBOSE
+            "Including flags: ${arg_INCLUDE_FLAGS} for target ${target}")
+    foreach(_include_flag ${arg_INCLUDE_FLAGS})
+      check_and_append_flag(FLAGS "${_include_flag}" TARGETS FLAGS QUOTELESS)
+      check_and_append_flag(FLAGS "${_include_flag}" TARGETS LINKS QUOTELESS)
+    endforeach()
+    message(VERBOSE "Hardening flags with included flags for ${target}:
+    Hardening compiling flags: ${FLAGS}
+    Hardening linking flags: ${LINKS}")
+  endif()
+
+  if(arg_EXCLUDE_FLAGS)
+    message(VERBOSE
+            "Excluding flags: ${arg_EXCLUDE_FLAGS} for target ${target}")
+    foreach(_exclude_flag ${arg_EXCLUDE_FLAGS})
+      list(REMOVE_ITEM FLAGS "${_exclude_flag}")
+      list(REMOVE_ITEM LINKS "${_exclude_flag}")
+    endforeach()
+    message(VERBOSE "Hardening flags with excluded flags for ${target}:
+    Hardening compiling flags: ${FLAGS}
+    Hardening linking flags: ${LINKS}")
+  endif()
 
   message(VERBOSE "Hardening target ${target} by ${CMAKE_CURRENT_FUNCTION}:
     Hardening compiling flags: ${FLAGS}
