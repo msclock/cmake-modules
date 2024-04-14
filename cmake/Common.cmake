@@ -116,7 +116,7 @@ Example:
   check_and_append_flags(FLAGS "-fno-omit-frame-pointer" TARGETS CMAKE_C_FLAGS CMAKE_CXX_FLAGS REQUIRED)
 ]]
 function(check_and_append_flag)
-  set(_opts REQUIRED)
+  set(_opts REQUIRED QUOTELESS)
   set(_single_opts FLAGS)
   set(_multi_opts TARGETS)
   cmake_parse_arguments(PARSE_ARGV 0 "arg" "${_opts}" "${_single_opts}"
@@ -130,8 +130,14 @@ function(check_and_append_flag)
     message(DEBUG "  Appending ${arg_FLAGS} to ${arg_TARGETS}")
 
     foreach(_target ${arg_TARGETS})
+      if(arg_QUOTELESS)
+        append_variable_quoteless("${arg_FLAGS}" ${_target})
+      else()
+        append_variable("${arg_FLAGS}" ${_target})
+      endif()
+      # forwarded variables are not updated in the parent scope
       set(${_target}
-          "${${_target}} ${arg_FLAGS}"
+          "${${_target}}"
           PARENT_SCOPE)
     endforeach()
   else()
