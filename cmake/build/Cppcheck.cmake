@@ -26,8 +26,6 @@ set(USE_CPPCHECK_OPTIONS
     --inconclusive
     CACHE STRING "cppcheck run options")
 
-cmake_path(NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR}/_deps/)
-
 set(USE_CPPCHECK_SUPPRESS_DIR
     "*:${CMAKE_CURRENT_BINARY_DIR}/_deps/*"
     CACHE STRING "Directory to suppress cppcheck warnings")
