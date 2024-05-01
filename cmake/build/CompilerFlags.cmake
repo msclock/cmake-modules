@@ -89,6 +89,10 @@ if(CMAKE_VERSION VERSION_LESS 3.24)
   option(CMAKE_COMPILE_WARNING_AS_ERROR "Treat Warnings As Errors" OFF)
 endif()
 
+set(COMPILER_FLAGS_SKIP_TARGETS_REGEXES
+    ""
+    CACHE STRING "List of regexes to skip targets.")
+
 message(
   STATUS
     "Use Compiler flags:

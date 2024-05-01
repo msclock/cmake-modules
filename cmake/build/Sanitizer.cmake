@@ -59,6 +59,18 @@ set(USE_SANITIZER
     "Address,Undefined"
     CACHE STRING "Compile with sanitizer flags.")
 
+set(USE_SANITIZER_SKIP_TARGETS_REGEXES
+    ""
+    CACHE STRING "Regexes to skip targets to sanitize.")
+
+set(USE_SANITIZER_BLACKLIST_FILE
+    ""
+    CACHE STRING "Path to a blacklist file for Undefined sanitizer.")
+
+set(USE_SANITIZER_EXTRA_FLAGS
+    ""
+    CACHE STRING "Extra flags to pass to the sanitizer. Default to empty.")
+
 message(
   STATUS
     "Use sanitizer with USE_SANITIZER: ${USE_SANITIZER}
@@ -90,7 +102,6 @@ message(
   Sanitizer provides the commands:
 
     sanitize_target(target) - add sanitizer flags to a target including copy sanitizer runtime.
-    copy_sanitizer_runtime(target) - copy sanitizer runtime to target location.
 ")
 
 string(TOLOWER "${USE_SANITIZER}" USE_SANITIZER)
