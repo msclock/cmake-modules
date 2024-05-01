@@ -49,14 +49,13 @@ else()
       -Wformat=2 # Enabled in compiler flags by default
       -Wl,-z,nodlopen # Restrict dlopen(3) calls to shared objects
       -Wl,-z,noexecstack # Enable data execution prevention by marking stack
-                         # memory as non-executable
+      # memory as non-executable
       -Wl,-z,relro # Mark relocation table entries resolved at load-time as
-                   # read-only
+      # read-only
       -Wl,-z,now # Mark relocation table entries resolved at load-time as
-                 # read-only. It impacts startup performance
+      # read-only. It impacts startup performance
       "-fsanitize=undefined -fsanitize-minimal-runtime" # Enable minimal runtime
-                                                        # undefined behavior
-                                                        # sanitizer
+      # undefined behavior sanitizer
       -fno-delete-null-pointer-checks
       -fno-strict-overflow
       -fno-strict-aliasing
@@ -68,17 +67,20 @@ else()
   set(USE_HARDENING_LINKS
       -fstack-protector-strong # Enable stack protector
       "-fsanitize=undefined -fsanitize-minimal-runtime" # Enable minimal runtime
-                                                        # undefined behavior
-                                                        # sanitizer
+      # undefined behavior sanitizer
       -Wl,-z,nodlopen # Restrict dlopen(3) calls to shared objects
       -Wl,-z,noexecstack # Enable data execution prevention by marking stack
-                         # memory as non-executable
+      # memory as non-executable
       -Wl,-z,relro # Mark relocation table entries resolved at load-time as
-                   # read-only
+      # read-only
       -Wl,-z,now # Mark relocation table entries resolved at load-time as
-                 # read-only. It impacts startup performance
+      # read-only. It impacts startup performance
       CACHE STRING "Additional hardening linking flags for GCC/Clang")
 endif()
+
+set(USE_HARDENING_SKIP_TARGETS_REGEXES
+    ""
+    CACHE STRING "List of regexes to skip targts")
 
 message(
   STATUS
@@ -94,6 +96,8 @@ if(NOT USE_HARDENING)
   message(STATUS "Hardening disabled by USE_HARDENING evaluates to false")
 endif()
 
+# Create a custom target to hold the hardening flags
+
 message(VERBOSE "Check Hardening flags: ${USE_HARDENING_FLAGS}")
 
 foreach(_harden ${USE_HARDENING_FLAGS})
@@ -106,6 +110,7 @@ message(VERBOSE "Check Hardening links: ${USE_HARDENING_LINKS}")
 
 foreach(_harden ${USE_HARDENING_LINKS})
   flags_to_list(_harden_list "${_harden}")
+
   if(hardening_flags MATCHES "${_harden_list}")
     list(APPEND hardening_links ${_harden})
   endif()
@@ -126,7 +131,6 @@ endif()
 flags_to_list(hardening_links "${hardening_links}")
 
 # Handle the conflics between hardening ubsan and asan
-
 if(TARGET sanitizer_flags)
   get_target_property(_san sanitizer_flags _san)
 
@@ -201,10 +205,12 @@ function(harden_target target)
   if(arg_INCLUDE_FLAGS)
     message(VERBOSE
             "Including flags: ${arg_INCLUDE_FLAGS} for target ${target}")
+
     foreach(_include_flag ${arg_INCLUDE_FLAGS})
       check_and_append_flag(FLAGS "${_include_flag}" TARGETS FLAGS QUOTELESS)
       check_and_append_flag(FLAGS "${_include_flag}" TARGETS LINKS QUOTELESS)
     endforeach()
+
     message(VERBOSE "Hardening flags with included flags for ${target}:
     Hardening compiling flags: ${FLAGS}
     Hardening linking flags: ${LINKS}")
@@ -213,10 +219,12 @@ function(harden_target target)
   if(arg_EXCLUDE_FLAGS)
     message(VERBOSE
             "Excluding flags: ${arg_EXCLUDE_FLAGS} for target ${target}")
+
     foreach(_exclude_flag ${arg_EXCLUDE_FLAGS})
       list(REMOVE_ITEM FLAGS "${_exclude_flag}")
       list(REMOVE_ITEM LINKS "${_exclude_flag}")
     endforeach()
+
     message(VERBOSE "Hardening flags with excluded flags for ${target}:
     Hardening compiling flags: ${FLAGS}
     Hardening linking flags: ${LINKS}")
