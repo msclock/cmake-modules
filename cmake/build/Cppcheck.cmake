@@ -27,7 +27,7 @@ set(USE_CPPCHECK_OPTIONS
     CACHE STRING "cppcheck run options")
 
 set(USE_CPPCHECK_SUPPRESS_DIR
-    "*:${CMAKE_CURRENT_BINARY_DIR}/_deps/*"
+    "*:${CMAKE_CURRENT_BINARY_DIR}/*"
     CACHE STRING "Directory to suppress cppcheck warnings")
 
 set(USE_CPPCHECK_WARNINGS_AS_ERRORS
