@@ -26,9 +26,9 @@ set(USE_CPPCHECK_OPTIONS
     --inconclusive
     CACHE STRING "cppcheck run options")
 
-set(USE_CPPCHECK_SUPPRESS_DIR
-    "*:${CMAKE_CURRENT_BINARY_DIR}/*"
-    CACHE STRING "Directory to suppress cppcheck warnings")
+set(USE_CPPCHECK_SUPPRESSION_FILE
+    ""
+    CACHE FILEPATH "cppcheck suppression file")
 
 set(USE_CPPCHECK_WARNINGS_AS_ERRORS
     OFF
@@ -40,7 +40,7 @@ message(
   Cppcheck Options:
     USE_CPPCHECK: If use cppcheck. Default is ON.
     USE_CPPCHECK_OPTIONS: cppcheck run options. Default is ${USE_CPPCHECK_OPTIONS}
-    USE_CPPCHECK_SUPPRESS_DIR: Directory to suppress cppcheck warnings. Default is ${USE_CPPCHECK_SUPPRESS_DIR}
+    USE_CPPCHECK_SUPPRESSION_FILE: cppcheck suppression file pass to --suppressions-list option. Default is empty.
     USE_CPPCHECK_WARNINGS_AS_ERRORS: If treat warnings as errors. Default is OFF."
 )
 
@@ -59,6 +59,8 @@ if(NOT CPPCHECK_COMMAND)
   return()
 endif()
 
+set(CMAKE_CXX_CPPCHECK ${CPPCHECK_COMMAND} ${USE_CPPCHECK_OPTIONS})
+
 # Set cppcheck template based on the generator used
 if(CMAKE_GENERATOR MATCHES ".*Visual Studio.*")
   set(CPPCHECK_TEMPLATE "vs")
@@ -66,22 +68,33 @@ else()
   set(CPPCHECK_TEMPLATE "gcc")
 endif()
 
+# Prepend the template to the options
+list(INSERT CMAKE_CXX_CPPCHECK 1 --template=${CPPCHECK_TEMPLATE})
+
+# Add the standard to the cppcheck options
+if(NOT "${CMAKE_CXX_STANDARD}" STREQUAL "")
+  list(INSERT CMAKE_CXX_CPPCHECK 1 --std=c++${CMAKE_CXX_STANDARD})
+endif()
+
+# Suppress warnings in the build directory
+list(APPEND CMAKE_CXX_CPPCHECK --suppress=*:${CMAKE_CURRENT_BINARY_DIR}/*)
+
+# Add vcpkg include to the cppcheck search path and suppress it
 if(VCPKG_INSTALLED_DIR AND VCPKG_TARGET_TRIPLET)
-  list(APPEND USE_CPPCHECK_OPTIONS
+  list(APPEND CMAKE_CXX_CPPCHECK
        -I${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
        --suppress=*:${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/*)
 endif()
 
-set(CMAKE_CXX_CPPCHECK
-    ${CPPCHECK_COMMAND} --template=${CPPCHECK_TEMPLATE} ${USE_CPPCHECK_OPTIONS}
-    --suppress=${USE_CPPCHECK_SUPPRESS_DIR})
-
-if(NOT "${CMAKE_CXX_STANDARD}" STREQUAL "")
-  list(APPEND CMAKE_CXX_CPPCHECK --std=c++${CMAKE_CXX_STANDARD})
+# Add cppcheck suppression file
+if(EXISTS "${USE_CPPCHECK_SUPPRESSION_FILE}")
+  list(APPEND CMAKE_CXX_CPPCHECK
+       --suppressions-list=${USE_CPPCHECK_SUPPRESSION_FILE})
 endif()
 
 if(USE_CPPCHECK_WARNINGS_AS_ERRORS)
   list(APPEND CMAKE_CXX_CPPCHECK --error-exitcode=2)
 endif()
+
 list(REMOVE_DUPLICATES CMAKE_CXX_CPPCHECK)
 message(STATUS "Cppcheck final command: ${CMAKE_CXX_CPPCHECK}")
