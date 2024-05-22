@@ -69,8 +69,10 @@ if(USE_VALGRIND_SUPPRESSION_FILE)
       "--suppressions=${USE_VALGRIND_SUPPRESSION_FILE}")
 endif()
 
+string(REPLACE ";" " " _valgrind_option_str "${USE_VALGRIND_OPTIONS}")
+
 set(VALGRIND_COMMAND_OPTIONS
-    "${USE_VALGRIND_OPTIONS} ${valgrind_suppress_command}"
+    "${_valgrind_option_str} ${valgrind_suppress_command}"
     CACHE STRING "valgrind options" FORCE)
 
 message(STATUS "Valgrind final options: ${VALGRIND_COMMAND_OPTIONS}")
@@ -81,7 +83,7 @@ if(USE_VALGRIND_ENABLE_MEMCHECK)
     "Enable memory check with ctest command for testsuit, e.g. ctest -C Debug -D ExperimentalMemCheck"
   )
   set(MEMORYCHECK_COMMAND_OPTIONS
-      "${USE_VALGRIND_OPTIONS}"
+      "${_valgrind_option_str}"
       CACHE STRING "memory check command options" FORCE)
 
   message(STATUS "Memory check options: ${MEMORYCHECK_COMMAND_OPTIONS}")
@@ -94,3 +96,7 @@ if(USE_VALGRIND_ENABLE_MEMCHECK)
       STATUS "Memory check suppressions file: ${MEMORYCHECK_SUPPRESSION_FILE}")
   endif()
 endif()
+
+
+unset(valgrind_suppress_command)
+unset(_valgrind_option_str)
