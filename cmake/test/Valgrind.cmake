@@ -3,7 +3,7 @@ Configure valgrind to check memcheck on testsuit
 
 Note:
   - Valgrind requires enable the testing to run testsuit command, e.g. `ctest -T memcheck` or `ctest -C Debug -D ExperimentalMemCheck`.
-  - Valgrind can not work with sanitizer. You should disable it before run valgrind on testsuit.
+  - Valgrind can not work with sanitizer. You should disable it before run valgrind on testsuits.
 
 Example:
 
@@ -13,8 +13,18 @@ Example:
 include_guard(GLOBAL)
 
 set(USE_VALGRIND
-    "--leak-check=full --gen-suppressions=all --track-origins=yes"
-    CACHE STRING "use valgrind to check memory issues.")
+    OFF
+    CACHE BOOL "use valgrind to check memory issues.")
+
+set(USE_VALGRIND_OPTIONS
+    --show-leak-kinds=all # show all possible leak.
+    --gen-suppressions=all # gen suppress info automatically.
+    --track-origins=yes # locates the original position.
+    CACHE STRING "valgrind options.")
+
+set(USE_VALGRIND_SUPPRESSION_FILE
+    ""
+    CACHE STRING "path to valgrind suppress config file.")
 
 set(USE_VALGRIND_ENABLE_MEMCHECK
     ON
@@ -24,14 +34,12 @@ message(
   STATUS
     "Use valgrind with USE_VALGRIND: ${USE_VALGRIND}
   Valgrind Options:
-    USE_VALGRIND:
-      --show-leak-kinds=all - show all possible leak.
-      --gen-suppressions=all - gen suppress info automatically.
-      --track-origins=yes - locates the original position.
-    USE_VALGRIND_SUPPRESSION_FILE: path to valgrind suppress config file.
-    USE_VALGRIND_ENABLE_MEMCHECK: enable memory check with ctest command, e.g. ctest -T memcheck. Default is ON.
+    USE_VALGRIND: If use valgrind to check memory issues. Default is ${USE_VALGRIND}.
+    USE_VALGRIND_OPTIONS: valgrind options. Default is ${USE_VALGRIND_OPTIONS}.
+    USE_VALGRIND_SUPPRESSION_FILE: path to valgrind suppress config file. Default is empty.
+    USE_VALGRIND_ENABLE_MEMCHECK: enable memory check with ctest command, e.g. ctest -T memcheck. Default is ${USE_VALGRIND_ENABLE_MEMCHECK}.
   Note:
-    - Valgrind can not work with sanitizer. You should disable it before run valgrind on testsuit."
+    - Valgrind can not work with sanitizer. You should disable it before run valgrind on testsuits."
 )
 
 if(NOT CMAKE_HOST_UNIX)
@@ -62,7 +70,7 @@ if(USE_VALGRIND_SUPPRESSION_FILE)
 endif()
 
 set(VALGRIND_COMMAND_OPTIONS
-    "${USE_VALGRIND} ${valgrind_suppress_command}"
+    "${USE_VALGRIND_OPTIONS} ${valgrind_suppress_command}"
     CACHE STRING "valgrind options" FORCE)
 
 message(STATUS "Valgrind final options: ${VALGRIND_COMMAND_OPTIONS}")
@@ -73,7 +81,7 @@ if(USE_VALGRIND_ENABLE_MEMCHECK)
     "Enable memory check with ctest command for testsuit, e.g. ctest -C Debug -D ExperimentalMemCheck"
   )
   set(MEMORYCHECK_COMMAND_OPTIONS
-      "${USE_VALGRIND}"
+      "${USE_VALGRIND_OPTIONS}"
       CACHE STRING "memory check command options" FORCE)
 
   message(STATUS "Memory check options: ${MEMORYCHECK_COMMAND_OPTIONS}")
