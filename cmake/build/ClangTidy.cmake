@@ -46,13 +46,10 @@ set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY_COMMAND} ${USE_CLANGTIDY_OPTIONS})
 # Add the standard to the clang-tidy options
 if(NOT "${CMAKE_CXX_STANDARD}" STREQUAL "")
   if(MSVC)
-    set(CLANG_TIDY_STANDARD -extra-arg=/std:c++${CMAKE_CXX_STANDARD})
+    list(APPEND CMAKE_CXX_CLANG_TIDY -extra-arg=/std:c++${CMAKE_CXX_STANDARD})
   else()
-    set(CLANG_TIDY_STANDARD -extra-arg=-std=c++${CMAKE_CXX_STANDARD})
+    list(APPEND CMAKE_CXX_CLANG_TIDY -extra-arg=-std=c++${CMAKE_CXX_STANDARD})
   endif()
-
-  list(APPEND CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_STANDARD})
-  unset(CLANG_TIDY_STANDARD)
 endif()
 
 if(USE_CLANGTIDY_WARNINGS_AS_ERRORS)
