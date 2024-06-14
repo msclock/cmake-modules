@@ -1,5 +1,6 @@
 #[[
 This module provides some git stuffs.
+
 ]]
 
 include_guard(GLOBAL)
@@ -10,16 +11,18 @@ project git meta.
 
 Arguments:
   CONFIGURE_HEADER_FILE - git header configuration content.
-    Default to ${CMAKE_BINARY_DIR}/git/git.h.in (optional)
+    Default to ${CMAKE_CURRENT_BINARY_DIR}/git_version_template/_version.hpp.in (optional)
   DESTINATION - git header destination to generate.
-    Default to ${CMAKE_BINARY_DIR}/git/include/git.h (optional)
+    Default to ${CMAKE_CURRENT_BINARY_DIR}/git_version/_version.hpp (optional)
+  VERSION_NAMESPACE_PREFIX - namespace prefix for the generated cxx header.
+    Default to ${CMAKE_PROJECT_NAME} (optional)
 
 Example:
 
   include(GitTools)
-  gennerate_git_header()
   add_library(header INTERFACE)
-  target_include_interface_directories(header ${CMAKE_BINARY_DIR}/git/include)
+  generate_git_header(VERSION_NAMESPACE_PREFIX header)
+  target_include_interface_directories(header ${CMAKE_CURRENT_BINARY_DIR}/git_version)
   install_target(
     NAME
     header
@@ -28,18 +31,24 @@ Example:
     TARGETS
     header
     INCLUDES
-    ${CMAKE_BINARY_DIR}/git/include/)
+    ${CMAKE_CURRENT_BINARY_DIR}/git_version/)
 
+See also:
+  - https://raw.githubusercontent.com/andrew-hardin/cmake-git-version-tracking/master/git.h
 ]]
 function(generate_git_header)
   set(_opts)
-  set(_single_opts CONFIGURE_HEADER_FILE DESTINATION)
+  set(_single_opts CONFIGURE_HEADER_FILE DESTINATION VERSION_NAMESPACE_PREFIX)
   set(_multi_opts)
   cmake_parse_arguments(arg "${_opts}" "${_single_opts}" "${_multi_opts}"
                         ${ARGN})
 
   if(NOT arg_DESTINATION)
-    set(arg_DESTINATION ${CMAKE_BINARY_DIR}/git/include/git.h)
+    set(arg_DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/git_version/_version.hpp)
+  endif()
+
+  if(NOT arg_VERSION_NAMESPACE_PREFIX)
+    set(arg_VERSION_NAMESPACE_PREFIX ${CMAKE_PROJECT_NAME})
   endif()
 
   if(NOT arg_CONFIGURE_HEADER_FILE)
@@ -166,7 +175,7 @@ GIT_VERSION_TRACKING_EXTERN_C_END
 #ifdef __cplusplus
 
 /// This is a utility extension for C++ projects.
-/// It provides a \"git\" namespace that wraps the
+/// It provides a \"${arg_VERSION_NAMESPACE_PREFIX}\" namespace that wraps the
 /// C methods in more(?) ergonomic types.
 ///
 /// This is header-only in an effort to keep the
@@ -189,7 +198,7 @@ GIT_VERSION_TRACKING_EXTERN_C_END
 #include <string>
 #endif
 
-namespace git {
+namespace ${arg_VERSION_NAMESPACE_PREFIX} {
 
 #if GIT_VERSION_USE_STRING_VIEW
 using StringOrView = std::string_view\;
@@ -287,7 +296,7 @@ inline const StringOrView Describe() {
     return kValue\;
 }
 
-} // namespace git
+} // namespace ${arg_VERSION_NAMESPACE_PREFIX}
 
 // Cleanup our defines to avoid polluting.
 #undef GIT_VERSION_USE_STRING_VIEW
@@ -296,7 +305,8 @@ inline const StringOrView Describe() {
 #endif // __cplusplus
 ")
 
-    set(arg_CONFIGURE_HEADER_FILE ${CMAKE_BINARY_DIR}/git/git.h.in)
+    set(arg_CONFIGURE_HEADER_FILE
+        ${CMAKE_CURRENT_BINARY_DIR}/git_version_template/_version.hpp.in)
     file(WRITE ${arg_CONFIGURE_HEADER_FILE} ${_configure_git_header_content})
   endif()
 
@@ -306,10 +316,8 @@ inline const StringOrView Describe() {
 
   message(
     STATUS
-      "Generated git header including project metadata in ${arg_DESTINATION} from ${arg_CONFIGURE_HEADER_FILE}
+      "Generated a git version header including project metadata in ${arg_DESTINATION} from ${arg_CONFIGURE_HEADER_FILE}
   Usage:
-    include_directories(${arg_DESTINATION_PATH})
-    # Or
     target_include_directories(${arg_DESTINATION_PATH})
     # Or refer to https://github.com/msclock/cmake-modules/blob/master/cmake/configure/Common.cmake
     target_include_interface_directories(${arg_DESTINATION_PATH})")
