@@ -1,5 +1,5 @@
 #[[
-This module provides tools to handle cmake installations painlessly.
+This module provides tools to handle cmake dependency installations painlessly.
 ]]
 
 include_guard(GLOBAL)

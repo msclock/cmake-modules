@@ -18,3 +18,6 @@ set(BUILD_SHARED_LIBS
       "This will cause all libraries to be built shared unless the library was explicitly added as a static library.
 This variable is often added to projects as an ``option()`` so that each user of a project can decide if they want
 to build the project using shared or static libraries.")
+
+include(${CMAKE_CURRENT_LIST_DIR}/Ccache.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/LinkOptimization.cmake)
