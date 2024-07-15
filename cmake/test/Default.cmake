@@ -25,3 +25,5 @@ if(WIN32 AND NOT ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
     )
   endif()
 endif()
+
+include(${CMAKE_CURRENT_LIST_DIR}/Test.cmake)

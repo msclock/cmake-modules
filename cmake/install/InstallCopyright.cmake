@@ -1,3 +1,7 @@
+#[[
+This module provides tools to handle cmake copyright installations painlessly.
+]]
+
 include_guard(GLOBAL)
 
 #[[.md
