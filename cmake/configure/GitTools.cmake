@@ -7,7 +7,10 @@ include_guard(GLOBAL)
 
 #[[
 A function to generate a git version header using the current
-project git meta.
+project git meta. It requires the following variables to be set:
+  - CMAKE_PROJECT_GIT_COMMIT*: git commit information (see below)
+  - CMAKE_PROJECT_VERSION: project version number (major.minor.patch.tweak)
+  - CMAKE_PROJECT_VERSION_<MAJOR|MINOR|PATCH|TWEAK>: project version numbers (major, minor, patch, tweak)
 
 Arguments:
   CONFIGURE_HEADER_FILE - git header configuration content.
@@ -96,6 +99,12 @@ inline const char* git_ProjectVersionPatch() {
 /// The commit project version tweak.
 inline const char* git_ProjectVersionTweak() {
     return R\"(@CMAKE_PROJECT_VERSION_TWEAK@)\"\;
+}
+
+/// Were there any uncommitted changes that won't be reflected
+/// in the CommitID?
+inline bool git_AnyUncommittedChanges() {
+    return @CMAKE_PROJECT_GIT_COMMIT_DIRTY@ == 1\;
 }
 
 /// The commit author's name.
@@ -237,6 +246,10 @@ inline const StringOrView& ProjectVersionPatch() {
 }
 inline const StringOrView& ProjectVersionTweak() {
   static const StringOrView kValue = internal::InitString(git_ProjectVersionTweak())\;
+  return kValue\;
+}
+inline bool AnyUncommittedChanges() {
+  static const bool kValue = git_AnyUncommittedChanges()\;
   return kValue\;
 }
 inline const StringOrView& AuthorName() {
