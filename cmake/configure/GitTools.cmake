@@ -55,6 +55,14 @@ function(generate_git_header)
   endif()
 
   if(NOT arg_CONFIGURE_HEADER_FILE)
+
+    # Define default template variables
+    if(NOT CMAKE_PROJECT_GIT_COMMIT_DIRTY)
+      set(CMAKE_PROJECT_GIT_COMMIT_DIRTY
+          0
+          CACHE INTERNAL "")
+    endif()
+
     set(_configure_git_header_content
         "#pragma once
 // git.h
