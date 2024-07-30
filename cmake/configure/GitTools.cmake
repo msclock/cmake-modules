@@ -337,9 +337,9 @@ inline const StringOrView Describe() {
 
   message(
     STATUS
-      "Generated a git version header including project metadata in ${arg_DESTINATION} from ${arg_CONFIGURE_HEADER_FILE}
+      "Generated a git-based version header including project metadata in ${arg_DESTINATION} from ${arg_CONFIGURE_HEADER_FILE}
   Usage:
     target_include_directories(${arg_DESTINATION_PATH})
-    # Or refer to https://github.com/msclock/cmake-modules/blob/master/cmake/configure/Common.cmake
+    # Or refer to https://github.com/msclock/cmake-modules/blob/master/cmake/configure/GitTools.cmake
     target_include_interface_directories(${arg_DESTINATION_PATH})")
 endfunction()
