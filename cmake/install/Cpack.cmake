@@ -17,12 +17,21 @@ set(CPACK_RESOURCE_FILE_LICENSE
 set(CPACK_SOURCE_GENERATOR
     "TGZ;ZIP"
     CACHE STRING "Source generator")
+set(CPACK_PACKAGE_VERSION
+    ${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}
+)
+if(CMAKE_PROJECT_VERSION_TWEAK)
+  set(CPACK_PACKAGE_VERSION
+      ${CPACK_PACKAGE_VERSION}.${CMAKE_PROJECT_VERSION_TWEAK})
+endif()
 # cmake-format: off
 set(CPACK_SOURCE_IGNORE_FILES
   /.git
   /dist
   /.*build.*
+  /out
   /\\\\.DS_Store
+  CACHE STRING "CPack source ignore files"
 )
 # cmake-format: on
 
