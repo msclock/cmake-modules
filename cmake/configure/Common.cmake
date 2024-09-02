@@ -18,14 +18,15 @@ endmacro()
 #[[
 Show vcpkg configurition
 ]]
-macro(show_vcpkg_configuration)
-  message(STATUS "VCPKG_HOST_TRIPLET ${VCPKG_HOST_TRIPLET}")
-  message(STATUS "VCPKG_INSTALLED_DIR ${VCPKG_INSTALLED_DIR}")
-  message(STATUS "VCPKG_TARGET_TRIPLET ${VCPKG_TARGET_TRIPLET}")
-  message(STATUS "VCPKG_LIBRARY_LINKAGE ${VCPKG_LIBRARY_LINKAGE}")
-  message(STATUS "VCPKG_TARGET_IS_WINDOWS ${VCPKG_TARGET_IS_WINDOWS}")
-  message(STATUS "VCPKG_TARGET_IS_MINGW ${VCPKG_TARGET_IS_MINGW}")
-endmacro()
+function(show_vcpkg_configuration)
+  # Print all vcpkg variables
+  get_cmake_property(_vars VARIABLES)
+  foreach(_var IN LISTS _vars)
+    if(_var MATCHES "^VCPKG_")
+      message(STATUS "${_var} ${${_var}}")
+    endif()
+  endforeach()
+endfunction()
 
 #[[
 Add definition _DEBUG with config type Debug

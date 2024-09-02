@@ -17,3 +17,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/install/Default.cmake)
 add_debug_macro()
 
 create_uninstall_target()
+
+# Show information about the current project
+cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL show_project_version)
+cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL
+               show_vcpkg_configuration)
+cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL show_installation)
