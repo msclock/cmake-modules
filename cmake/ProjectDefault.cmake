@@ -23,3 +23,13 @@ cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL show_project_version)
 cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL
                show_vcpkg_configuration)
 cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL show_installation)
+
+# Cpack
+set(__cpack_cmake_module
+    ${CMAKE_CURRENT_LIST_DIR}/install/Cpack.cmake
+    CACHE
+      INTERNAL
+      "Cpack module path to be included when directory CMAKE_SOURCE_DIR ends"
+      FORCE)
+cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL include
+               ${__cpack_cmake_module})
