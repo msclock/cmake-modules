@@ -15,12 +15,13 @@ git clone --depth 1 https://github.com/msclock/cmake-modules.git cmake/cmake-mod
 Add to CMAKE_MODULE_PATH and refer the modules.
 ```cmake
 list(APPEND CMAKE_MODULE_PATH cmake/cmake-modules)
-include(module/path/without/.cmake/suffix)
+include(cmake-modules/cmake/ProjectDefault) # Entry module for general projects
+include(module/path/without/.cmake/suffix) # Include other modules
 ```
 
-### Using registry
+### Use registry
 
-There presents a cmake registry facilitates the cmake modules to refer. An example is [here](https://github.com/msclock/cpp-scaffold).
+The repo has been registered in the [cmake-registry](https://github.com/msclock/cmake-registry). Here is the [usage](https://github.com/msclock/cpp-scaffold).
 
 ## Modules
 
