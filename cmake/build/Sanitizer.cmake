@@ -127,14 +127,6 @@ if(USE_SANITIZER MATCHES [[memory(withorigins)?]]
   )
 endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
-                                           ".*Clang")
-  if(CMAKE_BUILD_TYPE MATCHES [[Debug]])
-    # Pending to verify if this is still necessary.
-    append_variable("-O1" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
-  endif()
-endif()
-
 if(USE_SANITIZER MATCHES [[address]])
   message(VERBOSE "Testing with Address sanitizer")
 
