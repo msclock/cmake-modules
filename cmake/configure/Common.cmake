@@ -53,7 +53,8 @@ function(target_include_interface_directories target)
     # Make include_dir absolute
     cmake_path(IS_RELATIVE _include_dir _is_relative)
     if(_is_relative)
-      set(_include_dir "${CMAKE_CURRENT_SOURCE_DIR}/${include_dir}")
+      cmake_path(ABSOLUTE_PATH _include_dir BASE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      OUTPUT_VARIABLE _include_dir)
     endif()
     list(APPEND _includes $<BUILD_INTERFACE:${_include_dir}>)
   endforeach()
