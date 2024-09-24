@@ -24,10 +24,7 @@ endif()
 include(CTest)
 
 function(add_test_subdirectory src)
-  if(NOT IS_ABSOLUTE src)
-    cmake_path(ABSOLUTE_PATH src BASE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-               OUTPUT_VARIABLE src)
-  endif()
+  cmake_path(ABSOLUTE_PATH src BASE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   message(STATUS "Adding tests from ${src}")
   add_subdirectory(${src})
 endfunction()
