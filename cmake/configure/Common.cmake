@@ -51,10 +51,8 @@ function(target_include_interface_directories target)
   set(_includes)
   foreach(_include_dir ${ARGN})
     # Make include_dir absolute
-    cmake_path(IS_RELATIVE _include_dir _is_relative)
-    if(_is_relative)
-      set(_include_dir "${CMAKE_CURRENT_SOURCE_DIR}/${include_dir}")
-    endif()
+    cmake_path(ABSOLUTE_PATH _include_dir BASE_DIRECTORY
+               ${CMAKE_CURRENT_SOURCE_DIR})
     list(APPEND _includes $<BUILD_INTERFACE:${_include_dir}>)
   endforeach()
 
