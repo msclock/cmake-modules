@@ -103,7 +103,7 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 endif()
 
 set(CODE_COVERAGE_LCOV_EXTRA_FLAGS
-    "--ignore-errors=gcov,mismatch"
+    "--ignore-errors=gcov,mismatch,mismatch"
     CACHE STRING "Extra command line flags to pass to lcov.")
 
 set(CODE_COVERAGE_GCOVR_EXTRA_FLAGS
@@ -262,6 +262,31 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_INITIALIZED)
     if(LCOV_PATH)
       add_custom_target(ccov-clean COMMAND ${LCOV_PATH} --directory
                                            ${CMAKE_BINARY_DIR} --zerocounters)
+      execute_process(
+        COMMAND "${LCOV_PATH}" --version
+        RESULT_VARIABLE _result
+        OUTPUT_VARIABLE _output
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+      message(STATUS "_output: ${_output}")
+      if(_result EQUAL 0 AND _output MATCHES " LCOV version ([0-9]+)")
+        set(LCOV_MAJOR_VERSION "${CMAKE_MATCH_1}")
+        if(LCOV_MAJOR_VERSION VERSION_LESS "2"
+           AND CODE_COVERAGE_LCOV_EXTRA_FLAGS MATCHES "mismatch")
+          message(
+            WARNING
+              "Does not support mismatch by lcov less 2 and remove params from ${CODE_COVERAGE_LCOV_EXTRA_FLAGS}..."
+          )
+          string(REPLACE [[mismatch]] "" CODE_COVERAGE_LCOV_EXTRA_FLAGS
+                         ${CODE_COVERAGE_LCOV_EXTRA_FLAGS})
+          set(CODE_COVERAGE_LCOV_EXTRA_FLAGS
+              "${CODE_COVERAGE_LCOV_EXTRA_FLAGS}"
+              CACHE STRING "Extra flags to pass to lcov" FORCE)
+          message(
+            STATUS
+              "Final CODE_COVERAGE_LCOV_EXTRA_FLAGS: ${CODE_COVERAGE_LCOV_EXTRA_FLAGS}"
+          )
+        endif()
+      endif()
     endif()
 
   elseif(CMAKE_C_COMPILER_ID MATCHES [[MSVC]] OR CMAKE_CXX_COMPILER_ID MATCHES
