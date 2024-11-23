@@ -21,3 +21,8 @@ to build the project using shared or static libraries.")
 
 include(${CMAKE_CURRENT_LIST_DIR}/Ccache.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/LinkOptimization.cmake)
+
+# Source includes from vcpkg
+if(VCPKG_INSTALLED_DIR AND VCPKG_TARGET_TRIPLET)
+  include_directories(${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
+endif()
