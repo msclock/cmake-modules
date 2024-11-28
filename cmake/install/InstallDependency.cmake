@@ -106,10 +106,18 @@ function(install_dependency)
   endif()
 
   if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-    # exclude windows API earlier
+    # exclude common dll
     if(NOT arg_PRE_EXCLUDE_REGEXES)
-      list(APPEND arg_PRE_EXCLUDE_REGEXES "api-ms-.*" "ext-ms-.*"
-           "KERNEL32.dll")
+      list(
+        APPEND
+        arg_PRE_EXCLUDE_REGEXES
+        "api-ms-.*"
+        "ext-ms-.*"
+        "KERNEL32.*"
+        "python.*"
+        "msvcp.*"
+        "vcruntime.*"
+        "concrt.*")
     endif()
 
     # exclude system dlls directories later
@@ -117,7 +125,7 @@ function(install_dependency)
       list(APPEND arg_POST_EXCLUDE_REGEXES "WINDOWS" "system32")
     endif()
   else()
-    # exclude windows API earlier
+    # exclude system libs earlier
     if(NOT arg_PRE_EXCLUDE_REGEXES)
       list(
         APPEND
@@ -151,6 +159,20 @@ function(install_dependency)
     # exclude system dlls directories later
     if(NOT arg_POST_EXCLUDE_REGEXES)
       list(APPEND arg_POST_EXCLUDE_REGEXES "x86_64-linux-gnu")
+    endif()
+  endif()
+
+  if(CMAKE_HOST_SYSTEM_NAME MATCHES [[Linux]] AND EXISTS "/etc/alpine-release")
+    find_program(_ldconfig ldconfig)
+    execute_process(COMMAND ldconfig -v -N -X RESULT_VARIABLE ldconfig_result)
+
+    if(NOT ldconfig_result EQUAL "0")
+      message(STATUS "Patch ldconfig in alpine for GET_RUNTIME_DEPENDENCIES")
+      file(READ "${_ldconfig}" _ldconfig_content)
+      string(REPLACE [[[ $# -gt 0 ] && scan_dirs]]
+                     [[[ $# -eq 0 ] && exit 0 || [ $# -gt 0 ] && scan_dirs]]
+                     _ldconfig_content "${_ldconfig_content}")
+      file(WRITE "${_ldconfig}" "${_ldconfig_content}")
     endif()
   endif()
 
@@ -209,10 +231,14 @@ function(install_dependency)
           if(_r_deps)
             message(STATUS "Resolved dependencies: ${_r_deps}")
             foreach(_file ${_r_deps})
-              file(
-                INSTALL
-                DESTINATION "${arg_DEPENDS_DESTINATION}"
-                TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
+              if(EXISTS "${_file}")
+                file(
+                  INSTALL
+                  DESTINATION "${arg_DEPENDS_DESTINATION}"
+                  TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
+                else()
+                  message(WARNING "Found a non-existent dependency: ${_file}")
+              endif()
             endforeach()
           endif()
 
@@ -230,15 +256,18 @@ function(install_dependency)
               set(_c_file_list ${_c_deps_${_filename}})
               message(STATUS "conflict ${_filename} list ${_c_file_list}")
               foreach(_file ${_c_file_list})
-                file(
-                  INSTALL
-                  DESTINATION "${arg_DEPENDS_DESTINATION}"
-                  TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
+                if(EXISTS "${_file}")
+                  file(
+                    INSTALL
+                    DESTINATION "${arg_DEPENDS_DESTINATION}"
+                    TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
+                else()
+                  message(WARNING "Found a non-existent conflict dependency: ${_file}")
+                endif()
               endforeach()
             endforeach()
           endif()
-
-      ]])
+          ]])
     endif()
   endforeach()
 
