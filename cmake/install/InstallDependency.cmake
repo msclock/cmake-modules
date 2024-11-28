@@ -231,14 +231,12 @@ function(install_dependency)
           if(_r_deps)
             message(STATUS "Resolved dependencies: ${_r_deps}")
             foreach(_file ${_r_deps})
-              if(EXISTS "${_file}")
-                file(
-                  INSTALL
-                  DESTINATION "${arg_DEPENDS_DESTINATION}"
-                  TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
-                else()
-                  message(WARNING "Found a non-existent dependency: ${_file}")
-              endif()
+              file(TO_CMAKE_PATH "${_file}" _file)
+              message(STATUS "From ${_file}")
+              file(
+                INSTALL
+                DESTINATION "${arg_DEPENDS_DESTINATION}"
+                TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
             endforeach()
           endif()
 
@@ -256,14 +254,12 @@ function(install_dependency)
               set(_c_file_list ${_c_deps_${_filename}})
               message(STATUS "conflict ${_filename} list ${_c_file_list}")
               foreach(_file ${_c_file_list})
-                if(EXISTS "${_file}")
-                  file(
-                    INSTALL
-                    DESTINATION "${arg_DEPENDS_DESTINATION}"
-                    TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
-                else()
-                  message(WARNING "Found a non-existent conflict dependency: ${_file}")
-                endif()
+                file(TO_CMAKE_PATH "${_file}" _file)
+                message(STATUS "From ${_file}")
+                file(
+                  INSTALL
+                  DESTINATION "${arg_DEPENDS_DESTINATION}"
+                  TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
               endforeach()
             endforeach()
           endif()
