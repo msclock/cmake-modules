@@ -193,6 +193,10 @@ function(install_dependency)
       install(
         CODE [[
 
+          if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+            set(file_install_param FOLLOW_SYMLINK_CHAIN)
+          endif()
+
           set(library_target "")
           set(executable_target "")
           set(module_target "")
@@ -236,7 +240,7 @@ function(install_dependency)
               file(
                 INSTALL
                 DESTINATION "${arg_DEPENDS_DESTINATION}"
-                TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
+                TYPE SHARED_LIBRARY ${file_install_param} FILES "${_file}")
             endforeach()
           endif()
 
@@ -259,7 +263,7 @@ function(install_dependency)
                 file(
                   INSTALL
                   DESTINATION "${arg_DEPENDS_DESTINATION}"
-                  TYPE SHARED_LIBRARY FOLLOW_SYMLINK_CHAIN FILES "${_file}")
+                  TYPE SHARED_LIBRARY ${file_install_param} FILES "${_file}")
               endforeach()
             endforeach()
           endif()
