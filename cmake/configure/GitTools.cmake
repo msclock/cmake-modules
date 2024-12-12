@@ -333,13 +333,26 @@ inline const StringOrView Describe() {
 
   configure_file("${arg_CONFIGURE_HEADER_FILE}" "${arg_DESTINATION}" @ONLY)
 
-  get_filename_component(arg_DESTINATION_PATH ${arg_DESTINATION} DIRECTORY)
+  get_filename_component(_destination_dir ${arg_DESTINATION} DIRECTORY)
+
+  string(REPLACE "${CMAKE_CURRENT_BINARY_DIR}" "" _binary_include_dir
+                 "${_destination_dir}")
+  string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}" "" _source_include_dir
+                 "${_destination_dir}")
+
+  if(NOT "${_binary_include_dir}" STREQUAL "${_destination_dir}")
+    set(_include_dir_for_target
+        "\${CMAKE_CURRENT_BINARY_DIR}${_binary_include_dir}")
+  else()
+    set(_include_dir_for_target
+        "\${CMAKE_CURRENT_SOURCE_DIR}${_source_include_dir}")
+  endif()
 
   message(
     STATUS
       "Generated a git-based version header including project metadata in ${arg_DESTINATION} from ${arg_CONFIGURE_HEADER_FILE}
   Usage:
-    target_include_directories(${arg_DESTINATION_PATH})
-    # Or refer to https://github.com/msclock/cmake-modules/blob/master/cmake/configure/GitTools.cmake
-    target_include_interface_directories(${arg_DESTINATION_PATH})")
+    target_include_directories(${_include_dir_for_target})
+    # or
+    target_include_interface_directories(${_include_dir_for_target})")
 endfunction()

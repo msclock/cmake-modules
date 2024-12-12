@@ -8,9 +8,10 @@ include_guard(GLOBAL)
 Show installation directories
 ]]
 macro(show_installation)
+  message(STATUS "Installation Paths:")
   foreach(_p LIB BIN INCLUDE CMAKE)
     file(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_${_p}DIR} _path)
-    message(STATUS "Show ${_p} components installation path: ${_path}")
+    message(STATUS "\t${_p} installation path: ${_path}")
     unset(_path)
   endforeach()
 endmacro()
