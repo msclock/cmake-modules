@@ -111,10 +111,12 @@ function(install_dependency)
       list(
         APPEND
         arg_PRE_EXCLUDE_REGEXES
+        "python.*"
+        "libpypy.*"
+        "libffi.*"
         "api-ms-.*"
         "ext-ms-.*"
         "KERNEL32.*"
-        "python.*"
         "msvcp.*"
         "vcruntime.*"
         "concrt.*")
@@ -130,6 +132,7 @@ function(install_dependency)
       list(
         APPEND
         arg_PRE_EXCLUDE_REGEXES
+        "ld(-|64)[\.\-]"
         "ld-linux[\.\-]"
         "libc[\.\-]"
         "libdl[\.\-]"
