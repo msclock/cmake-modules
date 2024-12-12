@@ -22,9 +22,3 @@ include(module/path/without/.cmake/suffix) # Include other modules
 ### Use registry
 
 The repo has been registered in the [cmake-registry](https://github.com/msclock/cmake-registry). Here is the [usage](https://github.com/msclock/cpp-scaffold).
-
-## Modules
-
-The modules here are divided into different categories: configuration, build, installation and testing. That means relative modules are applied to relative stages of cmake.
-
-Basically, modules in the repository are collected from opensouces, but maybe modified to enhance generic usage.
