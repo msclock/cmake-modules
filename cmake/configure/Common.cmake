@@ -8,11 +8,16 @@ include_guard(GLOBAL)
 Show project version friendly
 ]]
 macro(show_project_version)
-  message(STATUS "CMAKE_PROJECT_VERSION finally:${CMAKE_PROJECT_VERSION}")
-  message(STATUS "CMAKE_PROJECT_VERSION_MAJOR: ${CMAKE_PROJECT_VERSION_MAJOR}")
-  message(STATUS "CMAKE_PROJECT_VERSION_MINOR: ${CMAKE_PROJECT_VERSION_MINOR}")
-  message(STATUS "CMAKE_PROJECT_VERSION_PATCH: ${CMAKE_PROJECT_VERSION_PATCH}")
-  message(STATUS "CMAKE_PROJECT_VERSION_TWEAK: ${CMAKE_PROJECT_VERSION_TWEAK}")
+  message(STATUS "CMake Project Version:")
+  message(STATUS "\tCMAKE_PROJECT_VERSION:${CMAKE_PROJECT_VERSION}")
+  message(
+    STATUS "\tCMAKE_PROJECT_VERSION_MAJOR: ${CMAKE_PROJECT_VERSION_MAJOR}")
+  message(
+    STATUS "\tCMAKE_PROJECT_VERSION_MINOR: ${CMAKE_PROJECT_VERSION_MINOR}")
+  message(
+    STATUS "\tCMAKE_PROJECT_VERSION_PATCH: ${CMAKE_PROJECT_VERSION_PATCH}")
+  message(
+    STATUS "\tCMAKE_PROJECT_VERSION_TWEAK: ${CMAKE_PROJECT_VERSION_TWEAK}")
 endmacro()
 
 #[[
@@ -20,10 +25,11 @@ Show vcpkg configurition
 ]]
 function(show_vcpkg_configuration)
   # Print all vcpkg variables
+  message(STATUS "Vcpkg Integration:")
   get_cmake_property(_vars VARIABLES)
   foreach(_var IN LISTS _vars)
     if(_var MATCHES "^VCPKG_")
-      message(STATUS "${_var} ${${_var}}")
+      message(STATUS "\t${_var} ${${_var}}")
     endif()
   endforeach()
 endfunction()
