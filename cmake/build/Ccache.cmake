@@ -28,7 +28,7 @@ find_program(
   DOC "ccache executable")
 
 if(NOT CCACHE_COMMAND)
-  message(WARNING "No ccache found, disable ccache optimization.")
+  message(STATUS "No ccache found, disable ccache optimization.")
   return()
 endif()
 
