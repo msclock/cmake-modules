@@ -104,63 +104,79 @@ message(
     COMPILER_FLAGS_SKIP_TARGETS_REGEXES: List of regexes to skip targets. Default is empty."
 )
 
-if(MSVC)
-  set(_warnings_cxx_temp ${COMPILER_FLAGS_WARNINGS_MSVC})
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
-                                               ".*Clang")
-  set(_warnings_cxx_temp ${COMPILER_FLAGS_WARNINGS_GNU})
-else()
-  message(
-    AUTHOR_WARNING
-      "No compiler warnings set for CXX compiler: '${CMAKE_CXX_COMPILER_ID}'")
-endif()
+string(
+  SHA256
+    _compiler_flags_hash
+    "${COMPILER_FLAGS_WARNINGS_MSVC}#${COMPILER_FLAGS_WARNINGS_GNU}#${COMPILER_FLAGS_WARNINGS_CUDA}#${CMAKE_COMPILE_WARNING_AS_ERROR}"
+)
+if(NOT DEFINED CACHE{__COMPILER_FLAGS_HASH} OR NOT __COMPILER_FLAGS_HASH
+                                               STREQUAL _compiler_flags_hash)
+  set(__COMPILER_FLAGS_HASH
+      "${_compiler_flags_hash}"
+      CACHE INTERNAL "Hash of compiler flags options")
+  set(__COMPILER_WARNINGS_C "")
+  set(__COMPILER_WARNINGS_CXX "")
+  set(__COMPILER_WARNINGS_CUDA "")
 
-message(VERBOSE "Check Compiler Warnings CXX: ${_warnings_cxx_temp}")
-
-foreach(_warn ${_warnings_cxx_temp})
-  check_and_append_flag(FLAGS "${_warn}" TARGETS compiler_warnings_cxx)
-endforeach()
-
-unset(_warnings_cxx_temp)
-
-if(CMAKE_COMPILE_WARNING_AS_ERROR)
   if(MSVC)
-    check_and_append_flag(FLAGS "/WX" TARGETS compiler_warnings_cxx)
+    set(_warnings_cxx_temp ${COMPILER_FLAGS_WARNINGS_MSVC})
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                                  ".*Clang")
-    check_and_append_flag(FLAGS "-Werror" TARGETS compiler_warnings_cxx)
+    set(_warnings_cxx_temp ${COMPILER_FLAGS_WARNINGS_GNU})
   else()
     message(
       AUTHOR_WARNING
-        "No compiler warnings as errors set for CXX compiler: '${CMAKE_CXX_COMPILER_ID}'"
-    )
+        "No compiler warnings set for CXX compiler: '${CMAKE_CXX_COMPILER_ID}'")
   endif()
+
+  message(VERBOSE "Check Compiler Warnings CXX: ${_warnings_cxx_temp}")
+
+  foreach(_warn ${_warnings_cxx_temp})
+    check_and_append_flag(FLAGS "${_warn}" TARGETS __COMPILER_WARNINGS_CXX)
+  endforeach()
+
+  unset(_warnings_cxx_temp)
+
+  if(CMAKE_COMPILE_WARNING_AS_ERROR)
+    if(MSVC)
+      check_and_append_flag(FLAGS "/WX" TARGETS __COMPILER_WARNINGS_CXX)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID
+                                                   MATCHES ".*Clang")
+      check_and_append_flag(FLAGS "-Werror" TARGETS __COMPILER_WARNINGS_CXX)
+    else()
+      message(
+        AUTHOR_WARNING
+          "No compiler warnings as errors set for CXX compiler: '${CMAKE_CXX_COMPILER_ID}'"
+      )
+    endif()
+  endif()
+
+  # use the same warning flags for C
+  set(__COMPILER_WARNINGS_C "${__COMPILER_WARNINGS_CXX}")
+
+  foreach(_warn ${COMPILER_FLAGS_WARNINGS_CUDA})
+    check_and_append_flag(FLAGS "${_warn}" TARGETS __COMPILER_WARNINGS_CUDA)
+  endforeach()
+
+  flags_to_list(__COMPILER_WARNINGS_C "${__COMPILER_WARNINGS_C}")
+  flags_to_list(__COMPILER_WARNINGS_CXX "${__COMPILER_WARNINGS_CXX}")
+  flags_to_list(__COMPILER_WARNINGS_CUDA "${__COMPILER_WARNINGS_CUDA}")
+  set(__COMPILER_WARNINGS_C
+      "${__COMPILER_WARNINGS_C}"
+      CACHE INTERNAL "compiler warnings flags for C")
+  set(__COMPILER_WARNINGS_CXX
+      "${__COMPILER_WARNINGS_CXX}"
+      CACHE INTERNAL "compiler warnings flags for CXX")
+  set(__COMPILER_WARNINGS_CUDA
+      "${__COMPILER_WARNINGS_CUDA}"
+      CACHE INTERNAL "compiler warnings flags for CUDA")
 endif()
 
-# use the same warning flags for C
-set(compiler_warnings_c "${compiler_warnings_cxx}")
-
-foreach(_warn ${COMPILER_FLAGS_WARNINGS_CUDA})
-  check_and_append_flag(FLAGS "${_warn}" TARGETS compiler_warnings_cuda)
-endforeach()
-
-flags_to_list(compiler_warnings_c "${compiler_warnings_c}")
-flags_to_list(compiler_warnings_cxx "${compiler_warnings_cxx}")
-flags_to_list(compiler_warnings_cuda "${compiler_warnings_cuda}")
-message(STATUS "Compiler final warnings for C: ${compiler_warnings_c}")
-message(STATUS "Compiler final warnings for CXX: ${compiler_warnings_cxx}")
-message(STATUS "Compiler final warnings for CUDA: ${compiler_warnings_cuda}")
-
-add_custom_target(compiler_flags_warnings)
-set_target_properties(compiler_flags_warnings
-                      PROPERTIES _c "${compiler_warnings_c}")
-set_target_properties(compiler_flags_warnings
-                      PROPERTIES _cxx "${compiler_warnings_cxx}")
-set_target_properties(compiler_flags_warnings
-                      PROPERTIES _cuda "${compiler_warnings_cuda}")
-unset(compiler_warnings_c)
-unset(compiler_warnings_cxx)
-unset(compiler_warnings_cuda)
+message(STATUS "Compiler final warnings for C: $CACHE{__COMPILER_WARNINGS_C}")
+message(
+  STATUS "Compiler final warnings for CXX: $CACHE{__COMPILER_WARNINGS_CXX}")
+message(
+  STATUS "Compiler final warnings for CUDA: $CACHE{__COMPILER_WARNINGS_CUDA}")
 
 #[[
 Function to apply compiler warnings to a target.
@@ -184,9 +200,18 @@ function(warn_target target)
     endforeach()
   endif()
 
-  get_target_property(_c compiler_flags_warnings _c)
-  get_target_property(_cxx compiler_flags_warnings _cxx)
-  get_target_property(_cuda compiler_flags_warnings _cuda)
+  if(NOT DEFINED CACHE{__COMPILER_WARNINGS_C}
+     OR NOT DEFINED CACHE{__COMPILER_WARNINGS_CXX}
+     OR NOT DEFINED CACHE{__COMPILER_WARNINGS_CUDA})
+    message(
+      FATAL_ERROR
+        "Compiler warnings not set. Please call 'include(${CMAKE_CURRENT_LIST_DIR}/CompilerFlags.cmake)'"
+    )
+  endif()
+
+  set(_c $CACHE{__COMPILER_WARNINGS_C})
+  set(_cxx $CACHE{__COMPILER_WARNINGS_CXX})
+  set(_cuda $CACHE{__COMPILER_WARNINGS_CUDA})
 
   if(arg_INCLUDE_FLAGS)
     message(VERBOSE

@@ -110,88 +110,102 @@ if(NOT USE_SANITIZER)
   message(STATUS "Sanitizer disabled by USE_SANITIZER evaluates to false.")
 endif()
 
-if(USE_SANITIZER MATCHES [[thread]] AND (USE_SANITIZER MATCHES [[address]]
-                                         OR USE_SANITIZER MATCHES [[leak]]))
-  message(
-    FATAL_ERROR "Thread sanitizer can not work with Address or Leak sanitizers."
-  )
-endif()
+string(
+  SHA256
+    _sanitizer_flags_hash
+    "${USE_SANITIZER_ASAN_FLAGS}#${USE_SANITIZER_MSAN_FLAGS}#${USE_SANITIZER_USAN_FLAGS}#${USE_SANITIZER_TSAN_FLAGS}#${USE_SANITIZER_LSAN_FLAGS}#${USE_SANITIZER_CFI_FLAGS}#${USE_SANITIZER_EXTRA_FLAGS}#${USE_SANITIZER_BLACKLIST_FILE}"
+)
+if(NOT DEFINED CACHE{__SANITIZER_FLAGS_HASH} OR NOT __SANITIZER_FLAGS_HASH
+                                                STREQUAL _sanitizer_flags_hash)
+  set(__SANITIZER_FLAGS_HASH
+      "${_sanitizer_flags_hash}"
+      CACHE INTERNAL "Hash of sanitizer flags options")
+  set(__SAN_AVAILABLE_FLAGS "")
 
-if(USE_SANITIZER MATCHES [[memory(withorigins)?]]
-   AND (USE_SANITIZER MATCHES [[address]]
-        OR USE_SANITIZER MATCHES [[leak]]
-        OR USE_SANITIZER MATCHES [[thread]]))
-  message(
-    FATAL_ERROR
-      "Memory sanitizer with origins track can not work with Address, Leak, and Thread sanitizers."
-  )
-endif()
-
-if(USE_SANITIZER MATCHES [[address]])
-  message(VERBOSE "Testing with Address sanitizer")
-
-  foreach(_flag ${USE_SANITIZER_ASAN_FLAGS})
-    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-  endforeach()
-endif()
-
-if(USE_SANITIZER MATCHES [[memory(withorigins)?]])
-  message(VERBOSE "Testing with Memory sanitizer with origins track")
-
-  foreach(_flag ${USE_SANITIZER_MSAN_FLAGS})
-    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-  endforeach()
-endif()
-
-if(USE_SANITIZER MATCHES [[undefined]])
-  message(VERBOSE "Testing with Undefined Behaviour sanitizer")
-
-  foreach(_flag ${USE_SANITIZER_USAN_FLAGS})
-    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-  endforeach()
-
-  if(EXISTS "${USE_SANITIZER_BLACKLIST_FILE}")
-    append_variable("-fsanitize-blacklist=${USE_SANITIZER_BLACKLIST_FILE}"
-                    san_available_flags)
+  if(USE_SANITIZER MATCHES [[thread]] AND (USE_SANITIZER MATCHES [[address]]
+                                           OR USE_SANITIZER MATCHES [[leak]]))
+    message(
+      FATAL_ERROR
+        "Thread sanitizer can not work with Address or Leak sanitizers.")
   endif()
+
+  if(USE_SANITIZER MATCHES [[memory(withorigins)?]]
+     AND (USE_SANITIZER MATCHES [[address]]
+          OR USE_SANITIZER MATCHES [[leak]]
+          OR USE_SANITIZER MATCHES [[thread]]))
+    message(
+      FATAL_ERROR
+        "Memory sanitizer with origins track can not work with Address, Leak, and Thread sanitizers."
+    )
+  endif()
+
+  if(USE_SANITIZER MATCHES [[address]])
+    message(VERBOSE "Testing with Address sanitizer")
+
+    foreach(_flag ${USE_SANITIZER_ASAN_FLAGS})
+      check_and_append_flag(FLAGS "${_flag}" TARGETS __SAN_AVAILABLE_FLAGS)
+    endforeach()
+  endif()
+
+  if(USE_SANITIZER MATCHES [[memory(withorigins)?]])
+    message(VERBOSE "Testing with Memory sanitizer with origins track")
+
+    foreach(_flag ${USE_SANITIZER_MSAN_FLAGS})
+      check_and_append_flag(FLAGS "${_flag}" TARGETS __SAN_AVAILABLE_FLAGS)
+    endforeach()
+  endif()
+
+  if(USE_SANITIZER MATCHES [[undefined]])
+    message(VERBOSE "Testing with Undefined Behaviour sanitizer")
+
+    foreach(_flag ${USE_SANITIZER_USAN_FLAGS})
+      check_and_append_flag(FLAGS "${_flag}" TARGETS __SAN_AVAILABLE_FLAGS)
+    endforeach()
+
+    if(EXISTS "${USE_SANITIZER_BLACKLIST_FILE}")
+      append_variable("-fsanitize-blacklist=${USE_SANITIZER_BLACKLIST_FILE}"
+                      __SAN_AVAILABLE_FLAGS)
+    endif()
+  endif()
+
+  if(USE_SANITIZER MATCHES [[thread]])
+    message(VERBOSE "Testing with Thread sanitizer")
+
+    foreach(_flag ${USE_SANITIZER_TSAN_FLAGS})
+      check_and_append_flag(FLAGS "${_flag}" TARGETS __SAN_AVAILABLE_FLAGS)
+    endforeach()
+  endif()
+
+  if(USE_SANITIZER MATCHES [[leak]])
+    message(VERBOSE "Testing with Leak sanitizer")
+
+    foreach(_flag ${USE_SANITIZER_LSAN_FLAGS})
+      check_and_append_flag(FLAGS "${_flag}" TARGETS __SAN_AVAILABLE_FLAGS)
+    endforeach()
+  endif()
+
+  if(USE_SANITIZER MATCHES [[cfi]])
+    message(VERBOSE "Testing with Control Flow Integrity(CFI) sanitizer")
+
+    foreach(_flag ${USE_SANITIZER_CFI_FLAGS})
+      check_and_append_flag(FLAGS "${_flag}" TARGETS __SAN_AVAILABLE_FLAGS)
+    endforeach()
+  endif()
+
+  if(USE_SANITIZER_EXTRA_FLAGS)
+    message(VERBOSE "Test with extra flags: ${USE_SANITIZER_EXTRA_FLAGS}")
+    check_and_append_flag(FLAGS "${USE_SANITIZER_EXTRA_FLAGS}" TARGETS
+                          __SAN_AVAILABLE_FLAGS)
+  endif()
+
+  flags_to_list(__SAN_AVAILABLE_FLAGS "${__SAN_AVAILABLE_FLAGS}")
+
+  set(__SAN_AVAILABLE_FLAGS
+      ${__SAN_AVAILABLE_FLAGS}
+      CACHE INTERNAL "Sanitizer flags")
 endif()
 
-if(USE_SANITIZER MATCHES [[thread]])
-  message(VERBOSE "Testing with Thread sanitizer")
-
-  foreach(_flag ${USE_SANITIZER_TSAN_FLAGS})
-    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-  endforeach()
-endif()
-
-if(USE_SANITIZER MATCHES [[leak]])
-  message(VERBOSE "Testing with Leak sanitizer")
-
-  foreach(_flag ${USE_SANITIZER_LSAN_FLAGS})
-    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-  endforeach()
-endif()
-
-if(USE_SANITIZER MATCHES [[cfi]])
-  message(VERBOSE "Testing with Control Flow Integrity(CFI) sanitizer")
-
-  foreach(_flag ${USE_SANITIZER_CFI_FLAGS})
-    check_and_append_flag(FLAGS "${_flag}" TARGETS san_available_flags)
-  endforeach()
-endif()
-
-if(USE_SANITIZER_EXTRA_FLAGS)
-  message(VERBOSE "Test with extra flags: ${USE_SANITIZER_EXTRA_FLAGS}")
-  check_and_append_flag(FLAGS "${USE_SANITIZER_EXTRA_FLAGS}" TARGETS
-                        san_available_flags)
-endif()
-
-flags_to_list(san_available_flags "${san_available_flags}")
-message(STATUS "Sanitizer final flags: ${san_available_flags}")
-
-add_custom_target(sanitizer_flags)
-set_target_properties(sanitizer_flags PROPERTIES _san "${san_available_flags}")
-unset(san_available_flags)
+message(STATUS "Sanitizer final flags: ${__SAN_AVAILABLE_FLAGS}")
 
 #[[
 A function to copy sanitizer runtime when open ASAN flags on windows.Basically,
@@ -289,7 +303,13 @@ function(sanitize_target target)
     endforeach()
   endif()
 
-  get_target_property(_san sanitizer_flags _san)
+  if(NOT DEFINED CACHE{__SAN_AVAILABLE_FLAGS})
+    message(
+      FATAL_ERROR
+        "Sanitizer flags not defined. Please check your configuration.")
+  endif()
+
+  set(_san $CACHE{__SAN_AVAILABLE_FLAGS})
 
   if(NOT MSVC)
     set(FLAGS ${_san})

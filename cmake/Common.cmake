@@ -78,7 +78,7 @@ function(check_flags_available return_var flags)
   set(FLAGS_BACKUP ${CMAKE_REQUIRED_FLAGS})
 
   # Set QUIET flag to suppress output during compilation check
-  set(CMAKE_REQUIRED_QUIET TRUE)
+  set(CMAKE_REQUIRED_QUIET ON)
 
   # Set the flags to be checked for availability
   set(CMAKE_REQUIRED_FLAGS "${flags}")
@@ -88,10 +88,11 @@ function(check_flags_available return_var flags)
     "int main() { return 0; }"
     is_available
     FAIL_REGEX
-    D9002
-    "unused-command-line-argument"
-    "invalid argument"
-    "unknown-warning-option") # linker error
+    [[D9002]]
+    [[unused-command-line-argument]]
+    [[invalid argument]]
+    [[unknown argument]]
+    [[unknown-warning-option]])
 
   # Store the result of flag availability check in the specified variable
   set(${return_var}
