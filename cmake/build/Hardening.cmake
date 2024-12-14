@@ -96,65 +96,76 @@ if(NOT USE_HARDENING)
   message(STATUS "Hardening disabled by USE_HARDENING evaluates to false")
 endif()
 
-# Create a custom target to hold the hardening flags
+string(SHA256 _hardening_flags_hash
+              "${USE_HARDENING_FLAGS}#${USE_HARDENING_LINKS}")
+if(NOT DEFINED CACHE{__HARDENING_FLAGS_HASH} OR NOT __HARDENING_FLAGS_HASH
+                                                STREQUAL _hardening_flags_hash)
+  set(__HARDENING_FLAGS_HASH
+      "${_hardening_flags_hash}"
+      CACHE INTERNAL "Hash of hardening flags options")
+  set(__HARDENING_FLAGS "")
+  set(__HARDENING_LINKS "")
 
-message(VERBOSE "Check Hardening flags: ${USE_HARDENING_FLAGS}")
+  # Create a custom target to hold the hardening flags
 
-foreach(_harden ${USE_HARDENING_FLAGS})
-  check_and_append_flag(FLAGS ${_harden} TARGETS hardening_flags)
-endforeach()
+  message(VERBOSE "Check Hardening flags: ${USE_HARDENING_FLAGS}")
 
-flags_to_list(hardening_flags "${hardening_flags}")
+  foreach(_harden ${USE_HARDENING_FLAGS})
+    check_and_append_flag(FLAGS ${_harden} TARGETS __HARDENING_FLAGS)
+  endforeach()
 
-message(VERBOSE "Check Hardening links: ${USE_HARDENING_LINKS}")
+  flags_to_list(__HARDENING_FLAGS "${__HARDENING_FLAGS}")
 
-foreach(_harden ${USE_HARDENING_LINKS})
-  flags_to_list(_harden_list "${_harden}")
+  message(VERBOSE "Check Hardening links: ${USE_HARDENING_LINKS}")
 
-  if(hardening_flags MATCHES "${_harden_list}")
-    list(APPEND hardening_links ${_harden})
+  foreach(_harden ${USE_HARDENING_LINKS})
+    flags_to_list(_harden_list "${_harden}")
+
+    if(__HARDENING_FLAGS MATCHES "${_harden_list}")
+      list(APPEND __HARDENING_LINKS ${_harden})
+    endif()
+  endforeach()
+
+  # Enable minimal runtime undefined but not not propagete globally, see
+  # https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#minimal-runtime
+  if(__HARDENING_FLAGS MATCHES
+     "-fsanitize=undefined;-fsanitize-minimal-runtime")
+    message(VERBOSE
+            "Try to enabling minimal runtime undefined behavior sanitizer")
+    check_and_append_flag(FLAGS "-fno-sanitize-recover=undefined" TARGETS
+                          no_sanitize_recover_ub)
+    flags_to_list(no_sanitize_recover_ub "${no_sanitize_recover_ub}")
+    list(APPEND __HARDENING_FLAGS ${no_sanitize_recover_ub})
+    list(APPEND __HARDENING_LINKS ${no_sanitize_recover_ub})
   endif()
-endforeach()
 
-# Enable minimal runtime undefined but not not propagete globally, see
-# https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#minimal-runtime
-if(hardening_flags MATCHES "-fsanitize=undefined;-fsanitize-minimal-runtime")
-  message(VERBOSE
-          "Try to enabling minimal runtime undefined behavior sanitizer")
-  check_and_append_flag(FLAGS "-fno-sanitize-recover=undefined" TARGETS
-                        no_sanitize_recover_ub)
-  flags_to_list(no_sanitize_recover_ub "${no_sanitize_recover_ub}")
-  list(APPEND hardening_flags ${no_sanitize_recover_ub})
-  list(APPEND hardening_links ${no_sanitize_recover_ub})
+  flags_to_list(__HARDENING_LINKS "${__HARDENING_LINKS}")
+
+  # Handle the conflics between hardening ubsan and asan
+  if(TARGET sanitizer_flags)
+    get_target_property(_san sanitizer_flags _san)
+
+    if(_san
+       AND _san MATCHES "-fsanitize=address"
+       AND __HARDENING_FLAGS MATCHES "-fsanitize-minimal-runtime")
+      message(
+        WARNING "Try to disable usan minimal runtime due to conflict with asan")
+      list(REMOVE_ITEM __HARDENING_FLAGS "-fsanitize=undefined"
+           "-fsanitize-minimal-runtime" "-fno-sanitize-recover=undefined")
+      list(REMOVE_ITEM __HARDENING_LINKS "-fsanitize=undefined"
+           "-fsanitize-minimal-runtime" "-fno-sanitize-recover=undefined")
+    endif()
+  endif()
+  set(__HARDENING_FLAGS
+      "${__HARDENING_FLAGS}"
+      CACHE INTERNAL "Hardening flags")
+  set(__HARDENING_LINKS
+      "${__HARDENING_LINKS}"
+      CACHE INTERNAL "Hardening links")
 endif()
 
-flags_to_list(hardening_links "${hardening_links}")
-
-# Handle the conflics between hardening ubsan and asan
-if(TARGET sanitizer_flags)
-  get_target_property(_san sanitizer_flags _san)
-
-  if(_san
-     AND _san MATCHES "-fsanitize=address"
-     AND hardening_flags MATCHES "-fsanitize-minimal-runtime")
-    message(
-      WARNING "Try to disable usan minimal runtime due to conflict with asan")
-    list(REMOVE_ITEM hardening_flags "-fsanitize=undefined"
-         "-fsanitize-minimal-runtime" "-fno-sanitize-recover=undefined")
-    list(REMOVE_ITEM hardening_links "-fsanitize=undefined"
-         "-fsanitize-minimal-runtime" "-fno-sanitize-recover=undefined")
-  endif()
-endif()
-
-message(STATUS "Hardening final flags: ${hardening_flags}")
-message(STATUS "Hardening final links: ${hardening_links}")
-
-add_custom_target(hardening_flags)
-set_target_properties(hardening_flags PROPERTIES _flags "${hardening_flags}")
-set_target_properties(hardening_flags PROPERTIES _links "${hardening_links}")
-
-unset(hardening_flags)
-unset(hardening_links)
+message(STATUS "Hardening final flags: $CACHE{__HARDENING_FLAGS}")
+message(STATUS "Hardening final links: $CACHE{__HARDENING_LINKS}")
 
 function(harden_target target)
   set(_opts)
@@ -196,8 +207,13 @@ function(harden_target target)
     endif()
   endif()
 
-  get_target_property(_flags hardening_flags _flags)
-  get_target_property(_links hardening_flags _links)
+  if(NOT DEFINED CACHE{__HARDENING_FLAGS} OR NOT DEFINED
+                                             CACHE{__HARDENING_LINKS})
+    message(FATAL_ERROR "Hardening flags not defined")
+  endif()
+
+  set(_flags $CACHE{__HARDENING_FLAGS})
+  set(_links $CACHE{__HARDENING_LINKS})
 
   set(FLAGS ${_flags} ${target_flags})
   set(LINKS ${_links} ${target_flags})
