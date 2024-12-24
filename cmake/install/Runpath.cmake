@@ -31,12 +31,14 @@ message(
 
 if(APPLE)
   set(_rpath "@loader_path/${_rel}")
+  list(APPEND _rpath @loader_path)
 else()
   set(_rpath "$ORIGIN/${_rel}")
+  list(APPEND _rpath $ORIGIN)
 endif()
 
 # Append runtime path
-list(APPEND CMAKE_INSTALL_RPATH ${_rpath};$ORIGIN)
+list(APPEND CMAKE_INSTALL_RPATH ${_rpath})
 message(STATUS "CMAKE_INSTALL_RPATH:${CMAKE_INSTALL_RPATH}")
 
 # Skip RPATH for MinGW and Windows
