@@ -18,6 +18,21 @@ add_debug_macro()
 
 create_uninstall_target()
 
+# Include optional ProjectOptions.cmake for customizing project settings
+if(EXISTS ${CMAKE_SOURCE_DIR}/cmake/ProjectOptions.cmake)
+  include(${CMAKE_SOURCE_DIR}/cmake/ProjectOptions.cmake)
+elseif(EXISTS ${CMAKE_SOURCE_DIR}/ProjectOptions.cmake)
+  include(${CMAKE_SOURCE_DIR}/ProjectOptions.cmake)
+endif()
+
+# Include general build and test settings for all projects
+include(${CMAKE_CURRENT_LIST_DIR}/build/Sanitizer.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/test/Valgrind.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/build/ClangTidy.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/build/Cppcheck.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/build/CompilerFlags.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/build/Hardening.cmake)
+
 # Show information about the current project
 cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL show_project_version)
 cmake_language(DEFER DIRECTORY ${CMAKE_SOURCE_DIR} CALL
