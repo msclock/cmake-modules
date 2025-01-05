@@ -25,6 +25,13 @@ elseif(EXISTS ${CMAKE_SOURCE_DIR}/ProjectOptions.cmake)
   include(${CMAKE_SOURCE_DIR}/ProjectOptions.cmake)
 endif()
 
+# Add custom module path from the project
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+endif()
+
 # Include general build and test settings for all projects
 include(${CMAKE_CURRENT_LIST_DIR}/build/Sanitizer.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/test/Valgrind.cmake)
